@@ -1,0 +1,73 @@
+<h2 class="mb-4">METAR Map &ndash; Preferences</h2>
+
+<%= form_for @changeset, Routes.preferences_path(@conn, :update), fn f -> %>
+ <input name="_method" type="hidden" value="patch" />
+
+  <div class="mb-3">
+    <label>The LEDs display</label>
+    <%= select(f, :mode, [{"flight category", "flight_category"}, {"wind speed", "wind_speed"}, {"ceiling", "ceiling"}, {"visibility", "visibility"}]) %> .
+    <%= error_tag(f, :mode) %>
+  </div>
+
+  <%= if @has_sensor do %>
+    <div class="mb-3">
+      <label>When the sensor reads below </label>
+      <%= text_input(f, :dark_sensor_pct, class: "w-16") %> %
+      <%= error_tag(f, :dark_sensor_pct) %>
+      <label>set the brightness to</label>
+      <%= text_input(f, :dark_brightness_pct, class: "w-16") %> %.
+      <%= error_tag(f, :dark_brightness_pct) %>
+    </div>
+
+    <div class="mb-3">
+      <label>When the sensor reads above </label>
+      <%= text_input(f, :bright_sensor_pct, class: "w-16") %> %
+      <%= error_tag(f, :bright_sensor_pct) %>
+      <label>set the brightness to</label>
+      <%= text_input(f, :bright_brightness_pct, class: "w-16") %> %.
+      <%= error_tag(f, :bright_brightness_pct) %>
+    </div>
+  <% else %>
+    <div class="mb-3">
+      <label>LED brightness is</label>
+      <%= text_input(f, :brightness_pct, class: "w-16") %> %.
+      <%= error_tag(f, :brightness_pct) %>
+    </div>
+  <% end %>  
+
+  <div class="mb-3">
+    <label>Flash windy stations when at least</label>
+    <%= text_input(f, :max_wind_kts, class: "w-16") %> kts (0 to disable).
+    <%= error_tag(f, :max_wind_kts) %>
+  </div>
+
+
+  <%= submit "Save", class: "px-5 py-3 bg-blue text-white hover:bg-blue-dark" %>
+<% end %>
+
+<%= if @has_sensor do %>
+  <div class="mt-4">
+    <%= button("Calibrate Dark Room", 
+      to: Routes.preferences_path(@conn, :calibrate_room, room: "dark"),
+      class: "px-5 py-3 bg-grey-darker text-grey-lighter hover:bg-grey-darkest") %>
+
+    <%= button("Calibrate Bright Room",
+      to: Routes.preferences_path(@conn, :calibrate_room, room: "bright"),
+      class: "px-5 py-3 bg-yellow text-yellow-darker hover:bg-yellow-dark") %>
+  </div>
+<% end %>
+
+<div class="mt-4">
+  <div class="alert py-2 my-4 text-green" role="alert"><%= get_flash(@conn, :info) %></div>
+  <div class="alert py-2 my-4 text-red" role="alert"><%= get_flash(@conn, :error) %></div>
+</div>
+
+<script type="text/javascript">
+  setTimeout(function() {
+    var alerts = document.querySelectorAll('.alert');
+
+    for (var i = 0; i < alerts.length; i++) {
+      alerts[i].style.display = 'none';
+    }
+  }, 3000)
+</script>

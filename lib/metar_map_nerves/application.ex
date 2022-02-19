@@ -31,14 +31,32 @@ defmodule MetarMapNerves.Application do
   end
 
   def children(_target) do
-    [
-      # Children for all targets except host
-      # Starts a worker by calling: MetarMapNerves.Worker.start_link(arg)
-      # {MetarMapNerves.Worker, arg},
-    ]
+    # Children for all targets except host
+
+    prefs = MetarMap.Preferences.load()
+    stations = MetarMap.Config.stations()
+    ldr_pin = MetarMap.Config.ldr_pin()
+
+    # List all child processes to be supervised
+    List.flatten([
+      {Registry, keys: :duplicate, name: MetarMap.LedController.Registry},
+      Enum.map(stations, &{MetarMap.LedController, station: &1, prefs: prefs}),
+      {MetarMap.StripController, prefs: prefs},
+      {MetarMap.MetarFetcher, stations: stations},
+      if(ldr_pin, do: [{MetarMap.LdrSensor, gpio_pin: ldr_pin}], else: []),
+      MetarMapWeb.Endpoint
+    ])
   end
 
   def target() do
     Application.get_env(:metar_map_nerves, :target)
+  end
+
+  # Tell Phoenix to update the endpoint configuration
+  # whenever the application is updated.
+  @impl true
+  def config_change(changed, _new, removed) do
+    MetarMapWeb.Endpoint.config_change(changed, removed)
+    :ok
   end
 end
