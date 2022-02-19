@@ -10,8 +10,7 @@
   </head>
   <body class="p-5 bg-grey-lighter">
     <main role="main" class="container">
-
-      <%= render @view_module, @view_template, assigns %>
+      <%= @inner_content %>
     </main>
     <script type="text/javascript" src="<%= Routes.static_path(@conn, "/js/app.js") %>"></script>
   </body>

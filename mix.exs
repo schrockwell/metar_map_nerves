@@ -30,26 +30,27 @@ defmodule MetarMap.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      # Dependencies for all targets
+      # NERVES - Dependencies for all targets
       {:nerves, "~> 1.7.4", runtime: false},
       {:shoehorn, "~> 0.7.0"},
       {:ring_logger, "~> 0.8.1"},
       {:toolshed, "~> 0.2.13"},
 
-      # Dependencies for all targets except :host
+      # NERVES - Dependencies for all targets except :host
       {:nerves_runtime, "~> 0.11.3", targets: @all_targets},
       {:nerves_pack, "~> 0.6.0", targets: @all_targets},
-      {:phoenix, "~> 1.4.0"},
-      {:phoenix_html, "~> 2.11"},
+
+      # MY APP - Target dependencies
+      {:phoenix, "~> 1.6.6"},
+      {:phoenix_html, "~> 3.2.0"},
       {:gettext, "~> 0.11"},
       {:jason, "~> 1.0"},
-      {:plug_cowboy, "~> 2.0"},
+      {:plug_cowboy, "~> 2.1"},
       {:sweet_xml, "~> 0.6.5"},
-      # {:blinkchain, "~> 1.0-rc"},
       {:blinkchain,
        git: "https://github.com/valiot/blinkchain.git", ref: "master-blinkchain", submodules: true},
       {:httpoison, "~> 1.5"},
-      {:phoenix_ecto, "~> 4.0"},
+      {:phoenix_ecto, "~> 4.4"},
       {:circuits_gpio, "~> 0.3"},
 
       # Dependencies for specific targets
