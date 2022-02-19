@@ -9,7 +9,7 @@ led_pin = 18
 
 # If the light sensor (LDR) is connected, use this GPIO pin.
 # Set to false if no light sensor is connected.
-ldr_pin = 1
+ldr_pin = 4
 
 # The stations are an array of tuples containing the full airport identifier and the LED
 # index (zero-based).
