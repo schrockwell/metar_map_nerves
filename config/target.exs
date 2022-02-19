@@ -109,12 +109,13 @@ config :mdns_lite,
   ]
 
 # Configures the Phoenix endpoint
-config :metar_map_nerves, MetarMapWeb.Endpoint,
+config :metar_map, MetarMapWeb.Endpoint,
   http: [port: 80],
   url: [host: "metar-map.local", port: 80],
   server: true,
   # cache_static_manifest: "priv/static/cache_manifest.json",
-  render_errors: [view: MetarMapWeb.ErrorView, accepts: ~w(html json)]
+  render_errors: [view: MetarMapWeb.ErrorView, accepts: ~w(html json)],
+  secret_key_base: "K93bkfXRGqOFzFsghkZeQvXLJ+aJIPjtIquFjxE4lPktFcr1aS8EaQaMPkvEaHGR"
 
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
@@ -170,6 +171,6 @@ config :blinkchain, :channel0,
     }
   ]
 
-config :metar_map_nerves,
+config :metar_map,
   ldr_pin: ldr_pin,
   stations: stations

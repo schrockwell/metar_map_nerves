@@ -1,7 +1,7 @@
-defmodule MetarMapNerves.MixProject do
+defmodule MetarMap.MixProject do
   use Mix.Project
 
-  @app :metar_map_nerves
+  @app :metar_map
   @version "0.1.0"
   @all_targets [:rpi, :rpi0, :rpi2, :rpi3, :rpi3a, :rpi4, :bbb, :osd32mp1, :x86_64]
 
@@ -22,7 +22,7 @@ defmodule MetarMapNerves.MixProject do
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      mod: {MetarMapNerves.Application, []},
+      mod: {MetarMap.Application, []},
       extra_applications: [:logger, :runtime_tools, :inets]
     ]
   end

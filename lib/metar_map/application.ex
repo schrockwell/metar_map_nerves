@@ -1,4 +1,4 @@
-defmodule MetarMapNerves.Application do
+defmodule MetarMap.Application do
   # See https://hexdocs.pm/elixir/Application.html
   # for more information on OTP Applications
   @moduledoc false
@@ -9,13 +9,13 @@ defmodule MetarMapNerves.Application do
   def start(_type, _args) do
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
-    opts = [strategy: :one_for_one, name: MetarMapNerves.Supervisor]
+    opts = [strategy: :one_for_one, name: MetarMap.Supervisor]
 
     children =
       [
         # Children for all targets
-        # Starts a worker by calling: MetarMapNerves.Worker.start_link(arg)
-        # {MetarMapNerves.Worker, arg},
+        # Starts a worker by calling: MetarMap.Worker.start_link(arg)
+        # {MetarMap.Worker, arg},
       ] ++ children(target())
 
     Supervisor.start_link(children, opts)
@@ -25,8 +25,8 @@ defmodule MetarMapNerves.Application do
   def children(:host) do
     [
       # Children that only run on the host
-      # Starts a worker by calling: MetarMapNerves.Worker.start_link(arg)
-      # {MetarMapNerves.Worker, arg},
+      # Starts a worker by calling: MetarMap.Worker.start_link(arg)
+      # {MetarMap.Worker, arg},
     ]
   end
 
@@ -49,7 +49,7 @@ defmodule MetarMapNerves.Application do
   end
 
   def target() do
-    Application.get_env(:metar_map_nerves, :target)
+    Application.get_env(:metar_map, :target)
   end
 
   # Tell Phoenix to update the endpoint configuration

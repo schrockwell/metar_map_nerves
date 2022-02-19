@@ -1,8 +1,8 @@
-defmodule MetarMapNervesTest do
+defmodule MetarMapTest do
   use ExUnit.Case
-  doctest MetarMapNerves
+  doctest MetarMap
 
   test "greets the world" do
-    assert MetarMapNerves.hello() == :world
+    assert MetarMap.hello() == :world
   end
 end

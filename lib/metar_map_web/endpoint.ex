@@ -1,5 +1,5 @@
 defmodule MetarMapWeb.Endpoint do
-  use Phoenix.Endpoint, otp_app: :metar_map_nerves
+  use Phoenix.Endpoint, otp_app: :metar_map
 
   socket("/socket", MetarMapWeb.UserSocket,
     websocket: true,
@@ -12,7 +12,7 @@ defmodule MetarMapWeb.Endpoint do
   # when deploying your static files in production.
   plug(Plug.Static,
     at: "/",
-    from: :metar_map_nerves,
+    from: :metar_map,
     gzip: false,
     only: ~w(css fonts images js favicon.ico robots.txt)
   )

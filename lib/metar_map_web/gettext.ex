@@ -20,5 +20,5 @@ defmodule MetarMapWeb.Gettext do
 
   See the [Gettext Docs](https://hexdocs.pm/gettext) for detailed usage.
   """
-  use Gettext, otp_app: :metar_map_nerves
+  use Gettext, otp_app: :metar_map
 end
