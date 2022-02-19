@@ -1,33 +1,41 @@
-# MetarMap
+# 🗺 METAR Map
 
-**TODO: Add description**
+This is a [Nerves](https://www.nerves-project.org) project to display the weather conditions at local airports using LEDs. [Here's a photo gallery.](https://imgur.com/a/z6Rmb7u)
 
-## Targets
+It was designed to run on a [Raspberry Pi Zero W](https://www.raspberrypi.com/products/raspberry-pi-zero-w/) with a string of [WS2811 LEDs](https://www.amazon.com/gp/product/B01AU6UG70).
 
-Nerves applications produce images for hardware targets based on the
-`MIX_TARGET` environment variable. If `MIX_TARGET` is unset, `mix` builds an
-image that runs on the host (e.g., your laptop). This is useful for executing
-logic tests, running utilities, and debugging. Other targets are represented by
-a short name like `rpi3` that maps to a Nerves system image for that platform.
-All of this logic is in the generated `mix.exs` and may be customized. For more
-information about targets see:
+![METAR map](https://imgur.com/DdmS8FM.jpg)
 
-<https://hexdocs.pm/nerves/targets.html#content>
+## Prerequisites
 
-## Getting Started
+* [asdf](http://asdf-vm.com) installs of:
+  * Elixir 1.13.1
+  * Erlang 24.1.7
+* [Nerves installation](https://hexdocs.pm/nerves/installation.html)
+* [direnv](https://direnv.net) (optional)
 
-To start your Nerves app:
+## Building the firmware
 
-* `export MIX_TARGET=my_target` or prefix every command with
-    `MIX_TARGET=my_target`. For example, `MIX_TARGET=rpi3`
-* Install dependencies with `mix deps.get`
-* Create firmware with `mix firmware`
-* Burn to an SD card with `mix firmware.burn`
+1. Copy `.envrc-example` to `.envrc` and modify it the environment variables as appropriate.
 
-## Learn more
+2. Edit `config/stations.exs` with the list of METAR station IDs.
 
-* Official docs: <https://hexdocs.pm/nerves/getting-started.html>
-* Official website: <https://nerves-project.org/>
-* Forum: <https://elixirforum.com/c/nerves-forum>
-* Discussion Slack elixir-lang #nerves ([Invite](https://elixir-slackin.herokuapp.com/))
-* Source: <https://github.com/nerves-project/nerves>
+3. Build firmware.
+
+    ```bash
+    direnv allow
+    # -> or just `source .envrc`
+
+    mix deps.get
+    mix firmware
+    ```
+
+4. Burn or upload the firmware.
+
+    ```bash
+    # Burn to an SD card
+    mix burn
+
+    # -OR- upload to an existing Pi
+    mix upload metar-map.local
+    ```
