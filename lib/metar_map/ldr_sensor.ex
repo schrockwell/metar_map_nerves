@@ -1,7 +1,7 @@
 defmodule MetarMap.LdrSensor do
   use GenServer
 
-  alias Circuits.GPIO
+  alias MetarMap.Gpio
 
   # The duration to force 0 output to discharge the capacitor
   @pulse_duration_ms 100
@@ -36,9 +36,9 @@ defmodule MetarMap.LdrSensor do
 
     send(self(), :start_pulse)
 
-    {:ok, gpio} = GPIO.open(gpio_pin, :output)
+    {:ok, gpio} = Gpio.open(gpio_pin, :output)
 
-    GPIO.set_interrupts(gpio, :both)
+    Gpio.set_interrupts(gpio, :both)
 
     {:ok,
      %{
@@ -58,8 +58,8 @@ defmodule MetarMap.LdrSensor do
   end
 
   def handle_info(:start_pulse, state) do
-    :ok = GPIO.set_direction(state.gpio, :output)
-    :ok = GPIO.write(state.gpio, 0)
+    :ok = Gpio.set_direction(state.gpio, :output)
+    :ok = Gpio.write(state.gpio, 0)
 
     Process.send_after(self(), :end_pulse, @pulse_duration_ms)
 
@@ -67,7 +67,7 @@ defmodule MetarMap.LdrSensor do
   end
 
   def handle_info(:end_pulse, state) do
-    :ok = GPIO.set_direction(state.gpio, :input)
+    :ok = Gpio.set_direction(state.gpio, :input)
 
     Process.send_after(self(), :start_pulse, @read_duration_ms)
 

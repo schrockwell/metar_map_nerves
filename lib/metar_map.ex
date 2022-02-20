@@ -7,7 +7,7 @@ defmodule MetarMap do
   if it comes from the database, an external API or others.
   """
 
-  alias Blinkchain.Color
+  alias MetarMap.Display.Color
 
   @doc """
   Naively blends two colors

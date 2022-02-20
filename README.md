@@ -18,24 +18,35 @@ It was designed to run on a [Raspberry Pi Zero W](https://www.raspberrypi.com/pr
 
 1. Copy `.envrc-example` to `.envrc` and modify it the environment variables as appropriate.
 
-2. Edit `config/stations.exs` with the list of METAR station IDs.
+2. Edit the config files:
 
-3. Build firmware.
+        config/blinkchian.exs  -> with the LED data pin and configuration
+        config/stations.exs    -> with the list of METAR station IDs
+        config/target.exs      -> with the LDR pin
+
+3. Set up the environment.
 
     ```bash
     direnv allow
     # -> or just `source .envrc`
 
     mix deps.get
-    mix firmware
     ```
 
-4. Burn or upload the firmware.
+4. Build and upload the firmware.
 
     ```bash
+    mix firmware
+
     # Burn to an SD card
     mix burn
 
     # -OR- upload to an existing Pi
     mix upload metar-map.local
     ```
+
+## Testing locally on the host machine
+
+```bash
+MIX_TARGET=host iex -S mix phx.server
+```

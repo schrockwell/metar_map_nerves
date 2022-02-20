@@ -48,10 +48,13 @@ defmodule MetarMap.MixProject do
       {:plug_cowboy, "~> 2.1"},
       {:sweet_xml, "~> 0.6.5"},
       {:blinkchain,
-       git: "https://github.com/valiot/blinkchain.git", ref: "master-blinkchain", submodules: true},
+       git: "https://github.com/valiot/blinkchain.git",
+       ref: "master-blinkchain",
+       submodules: true,
+       targets: @all_targets},
       {:httpoison, "~> 1.5"},
       {:phoenix_ecto, "~> 4.4"},
-      {:circuits_gpio, "~> 0.3"},
+      {:circuits_gpio, "~> 0.3", targets: @all_targets},
 
       # Dependencies for specific targets
       # NOTE: It's generally low risk and recommended to follow minor version

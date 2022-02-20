@@ -1,6 +1,7 @@
 defmodule MetarMap.StripController do
   use GenServer
   require Logger
+  alias MetarMap.Display
   alias MetarMap.Timeline
 
   @channel 0
@@ -28,7 +29,7 @@ defmodule MetarMap.StripController do
       ldr_brightness: 0.0
     }
 
-    Blinkchain.set_brightness(@channel, initial_brightness)
+    Display.set_brightness(@channel, initial_brightness)
 
     send(self(), :render)
 
@@ -43,10 +44,10 @@ defmodule MetarMap.StripController do
     {next_brightness, next_timeline} = Timeline.evaluate(state.brightness_timeline)
 
     if next_brightness != state.latest_brightness do
-      Blinkchain.set_brightness(@channel, next_brightness)
+      Display.set_brightness(@channel, next_brightness)
     end
 
-    Blinkchain.render()
+    Display.render()
 
     Process.send_after(self(), :render, @render_interval_ms)
 

@@ -20,11 +20,17 @@ config :nerves, :firmware, rootfs_overlay: "rootfs_overlay"
 
 config :nerves, source_date_epoch: "1645219245"
 
-# Use Ringlogger as the logger backend and remove :console.
-# See https://hexdocs.pm/ring_logger/readme.html for more information on
-# configuring ring_logger.
+# Configures the Phoenix endpoint
+config :metar_map, MetarMapWeb.Endpoint,
+  http: [port: 4000],
+  url: [host: "localhost", port: 4000],
+  secret_key_base: "K93bkfXRGqOFzFsghkZeQvXLJ+aJIPjtIquFjxE4lPktFcr1aS8EaQaMPkvEaHGR"
 
-config :logger, backends: [RingLogger]
+# Use Jason for JSON parsing in Phoenix
+config :phoenix, :json_library, Jason
+
+# Station and LED config
+import_config "stations.exs"
 
 if Mix.target() == :host or Mix.target() == :"" do
   import_config "host.exs"

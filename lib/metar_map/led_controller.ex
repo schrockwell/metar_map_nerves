@@ -2,8 +2,8 @@ defmodule MetarMap.LedController do
   use GenServer
   require Logger
 
-  alias Blinkchain.Color
-  alias MetarMap.{Station, Timeline}
+  alias MetarMap.Display.Color
+  alias MetarMap.{Display, Station, Timeline}
 
   @frame_interval_ms 40
   @fade_duration_ms 1500
@@ -151,14 +151,14 @@ defmodule MetarMap.LedController do
 
     # For performance - only update if necessary
     if color != state.latest_color do
-      Blinkchain.set_pixel(state.pixel, color)
+      Display.set_pixel(state.pixel, color)
     end
 
     {:noreply, %{state | timeline: timeline, latest_color: color, flicker: next_flicker}}
   end
 
   def terminate(_, state) do
-    Blinkchain.set_pixel(state.pixel, @colors.off)
+    Display.set_pixel(state.pixel, @colors.off)
   end
 
   defp update_station_color(state, opts) do

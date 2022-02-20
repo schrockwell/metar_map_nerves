@@ -1,5 +1,11 @@
 import Config
 
+# Use Ringlogger as the logger backend and remove :console.
+# See https://hexdocs.pm/ring_logger/readme.html for more information on
+# configuring ring_logger.
+
+config :logger, backends: [RingLogger]
+
 # Use shoehorn to start the main application. See the shoehorn
 # docs for separating out critical OTP applications such as those
 # involved with firmware updates.
@@ -108,23 +114,20 @@ config :mdns_lite,
     }
   ]
 
+config :metar_map,
+  display_adapter: MetarMap.Display.TargetAdapter,
+  gpio_adapter: MetarMap.Gpio.TargetAdapter,
+  dets_config_path: "/root/dets_config",
+  ldr_pin: 4
+
 # Configures the Phoenix endpoint
 config :metar_map, MetarMapWeb.Endpoint,
   http: [port: 80],
   url: [host: "metar-map.local", port: 80],
-  server: true,
-  # cache_static_manifest: "priv/static/cache_manifest.json",
-  render_errors: [view: MetarMapWeb.ErrorView, accepts: ~w(html json)],
-  secret_key_base: "K93bkfXRGqOFzFsghkZeQvXLJ+aJIPjtIquFjxE4lPktFcr1aS8EaQaMPkvEaHGR"
-
-# Use Jason for JSON parsing in Phoenix
-config :phoenix, :json_library, Jason
+  server: true
 
 # Blinkchain gamma config
-import_config "blinkchain_gamma.exs"
-
-# Station and LED config
-import_config "stations.exs"
+import_config "blinkchain.exs"
 
 # Import target specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.

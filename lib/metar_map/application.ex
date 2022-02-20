@@ -21,17 +21,8 @@ defmodule MetarMap.Application do
     Supervisor.start_link(children, opts)
   end
 
-  # List all child processes to be supervised
-  def children(:host) do
-    [
-      # Children that only run on the host
-      # Starts a worker by calling: MetarMap.Worker.start_link(arg)
-      # {MetarMap.Worker, arg},
-    ]
-  end
-
   def children(_target) do
-    # Children for all targets except host
+    # Children for all targets, including host
 
     prefs = MetarMap.Preferences.load()
     stations = MetarMap.Config.stations()
