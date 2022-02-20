@@ -88,16 +88,16 @@ defmodule MetarMap.LedController do
       |> Station.put_metar(metar)
       |> put_station_position(metar, bounds)
 
-    Logger.debug(
-      Enum.join(
-        [
-          "[#{next_station.id}]",
-          next_station |> Station.get_category() |> Atom.to_string() |> String.upcase(),
-          "#{Station.get_max_wind(next_station)} kts"
-        ],
-        " "
-      )
-    )
+    # Logger.debug(
+    #   Enum.join(
+    #     [
+    #       "[#{next_station.id}]",
+    #       next_station |> Station.get_category() |> Atom.to_string() |> String.upcase(),
+    #       "#{Station.get_max_wind(next_station)} kts"
+    #     ],
+    #     " "
+    #   )
+    # )
 
     if Station.get_category(next_station) == :unknown do
       Logger.warn("[#{next_station.id}] Flight category unknown")
