@@ -33,7 +33,7 @@
       <%= text_input(f, :brightness_pct, class: "w-16") %> %.
       <%= error_tag(f, :brightness_pct) %>
     </div>
-  <% end %>  
+  <% end %>
 
   <div class="mb-3">
     <label>Flash windy stations when at least</label>
@@ -47,7 +47,7 @@
 
 <%= if @has_sensor do %>
   <div class="mt-4">
-    <%= button("Calibrate Dark Room", 
+    <%= button("Calibrate Dark Room",
       to: Routes.preferences_path(@conn, :calibrate_room, room: "dark"),
       class: "px-5 py-3 bg-grey-darker text-grey-lighter hover:bg-grey-darkest") %>
 
@@ -56,11 +56,6 @@
       class: "px-5 py-3 bg-yellow text-yellow-darker hover:bg-yellow-dark") %>
   </div>
 <% end %>
-
-<div class="mt-4">
-  <div class="alert py-2 my-4 text-green" role="alert"><%= get_flash(@conn, :info) %></div>
-  <div class="alert py-2 my-4 text-red" role="alert"><%= get_flash(@conn, :error) %></div>
-</div>
 
 <script type="text/javascript">
   setTimeout(function() {

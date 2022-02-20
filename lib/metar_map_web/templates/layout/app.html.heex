@@ -1,0 +1,6 @@
+<main class="container">
+  <%= @inner_content %>
+  
+  <div class="my-4 alert text-green" role="alert"><%= get_flash(@conn, :info) %></div>
+  <div class="my-4 alert text-red" role="alert"><%= get_flash(@conn, :error) %></div>
+</main>
