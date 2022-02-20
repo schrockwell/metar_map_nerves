@@ -39,6 +39,8 @@ defmodule MetarMapWeb do
       # Use all HTML functionality (forms, tags, etc)
       use Phoenix.HTML
 
+      import Phoenix.LiveView.Helpers
+
       import MetarMapWeb.ErrorHelpers
       import MetarMapWeb.Gettext
       alias MetarMapWeb.Router.Helpers, as: Routes
@@ -50,6 +52,7 @@ defmodule MetarMapWeb do
       use Phoenix.Router
       import Plug.Conn
       import Phoenix.Controller
+      import Phoenix.LiveView.Router
     end
   end
 

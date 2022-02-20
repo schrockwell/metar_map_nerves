@@ -12,6 +12,7 @@ defmodule MetarMap.MixProject do
       elixir: "~> 1.9",
       archives: [nerves_bootstrap: "~> 1.10"],
       start_permanent: Mix.env() == :prod,
+      aliases: aliases(),
       build_embedded: true,
       deps: deps(),
       releases: [{@app, release()}],
@@ -40,7 +41,7 @@ defmodule MetarMap.MixProject do
       {:nerves_runtime, "~> 0.11.3", targets: @all_targets},
       {:nerves_pack, "~> 0.6.0", targets: @all_targets},
 
-      # MY APP - Target dependencies
+      # MY APP
       {:phoenix, "~> 1.6.6"},
       {:phoenix_html, "~> 3.2.0"},
       {:gettext, "~> 0.11"},
@@ -55,6 +56,10 @@ defmodule MetarMap.MixProject do
       {:httpoison, "~> 1.5"},
       {:phoenix_ecto, "~> 4.4"},
       {:circuits_gpio, "~> 0.3", targets: @all_targets},
+      {:phoenix_live_view, "~> 0.17.6"},
+      {:floki, ">= 0.30.0", only: :test},
+      {:esbuild, "~> 0.3", runtime: Mix.env() == :dev},
+      {:phoenix_live_reload, "~> 1.2", only: :dev},
 
       # Dependencies for specific targets
       # NOTE: It's generally low risk and recommended to follow minor version
@@ -82,6 +87,12 @@ defmodule MetarMap.MixProject do
       include_erts: &Nerves.Release.erts/0,
       steps: [&Nerves.Release.init/1, :assemble],
       strip_beams: Mix.env() == :prod or [keep: ["Docs"]]
+    ]
+  end
+
+  defp aliases do
+    [
+      "assets.deploy": ["esbuild default --minify", "phx.digest"]
     ]
   end
 end

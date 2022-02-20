@@ -7,3 +7,9 @@ config :metar_map,
   gpio_adapter: MetarMap.Gpio.HostAdapter,
   dets_config_path: "/tmp/dets_config",
   ldr_pin: 42
+
+config :metar_map, MetarMapWeb.Endpoint,
+  code_reloader: true,
+  watchers: [
+    esbuild: {Esbuild, :install_and_run, [:default, ~w(--sourcemap=inline --watch)]}
+  ]

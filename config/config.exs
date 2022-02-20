@@ -24,10 +24,19 @@ config :nerves, source_date_epoch: "1645219245"
 config :metar_map, MetarMapWeb.Endpoint,
   http: [port: 4000],
   url: [host: "localhost", port: 4000],
-  secret_key_base: "K93bkfXRGqOFzFsghkZeQvXLJ+aJIPjtIquFjxE4lPktFcr1aS8EaQaMPkvEaHGR"
+  secret_key_base: "K93bkfXRGqOFzFsghkZeQvXLJ+aJIPjtIquFjxE4lPktFcr1aS8EaQaMPkvEaHGR",
+  live_view: [signing_salt: "B+4fEsfJDXFt7zLsKD+c9BmsM1UNn9zB"]
 
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
+
+config :esbuild,
+  version: "0.14.0",
+  default: [
+    args: ~w(js/app.js --bundle --target=es2016 --outdir=../priv/static/assets),
+    cd: Path.expand("../assets", __DIR__),
+    env: %{"NODE_PATH" => Path.expand("../deps", __DIR__)}
+  ]
 
 # Station and LED config
 import_config "stations.exs"
