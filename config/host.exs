@@ -9,7 +9,9 @@ config :metar_map,
   ldr_pin: 42
 
 config :metar_map, MetarMapWeb.Endpoint,
+  check_origin: false,
   code_reloader: true,
+  debug_errors: true,
   watchers: [
     esbuild: {Esbuild, :install_and_run, [:default, ~w(--sourcemap=inline --watch)]}
   ]

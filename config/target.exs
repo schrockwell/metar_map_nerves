@@ -124,7 +124,8 @@ config :metar_map,
 config :metar_map, MetarMapWeb.Endpoint,
   http: [port: 80],
   url: [host: "metar-map.local", port: 80],
-  server: true
+  server: true,
+  cache_static_manifest: "priv/static/cache_manifest.json"
 
 # Blinkchain gamma config
 import_config "blinkchain.exs"

@@ -3,7 +3,9 @@ defmodule MetarMap.LedController do
   require Logger
 
   alias MetarMap.Display.Color
-  alias MetarMap.{Display, Station, Timeline}
+  alias MetarMap.{Display, Station, Timeline, Config}
+
+  @registry __MODULE__.Registry
 
   @frame_interval_ms 40
   @fade_duration_ms 1500
@@ -50,6 +52,18 @@ defmodule MetarMap.LedController do
     end)
   end
 
+  def get_state(station_id) do
+    station_id |> name() |> GenServer.call(:get_state)
+  end
+
+  def get_all_states do
+    Config.stations()
+    |> Enum.map(fn station ->
+      Task.async(fn -> get_state(station.id) end)
+    end)
+    |> Task.await_many()
+  end
+
   def exists?(id_or_station) do
     !is_nil(id_or_station |> name() |> Process.whereis())
   end
@@ -68,7 +82,7 @@ defmodule MetarMap.LedController do
   end
 
   def init({station, prefs}) do
-    {:ok, _} = Registry.register(__MODULE__.Registry, nil, station.id)
+    {:ok, _} = Registry.register(@registry, nil, station.id)
 
     trigger_frame()
 
@@ -81,6 +95,8 @@ defmodule MetarMap.LedController do
        pixel: {station.index, 0}
      }}
   end
+
+  def handle_call(:get_state, _, state), do: {:reply, state, state}
 
   def handle_cast({:put_metar, metar, bounds}, state) do
     next_station =

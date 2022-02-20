@@ -19,6 +19,8 @@ defmodule MetarMapWeb.Router do
 
     resources "/", PreferencesController, singleton: true
     post "/calibrate_room", PreferencesController, :calibrate_room
+
+    live "/status", StatusLive, :show
   end
 
   # Other scopes may use custom stacks.

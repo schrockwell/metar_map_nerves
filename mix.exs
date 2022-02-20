@@ -58,8 +58,8 @@ defmodule MetarMap.MixProject do
       {:circuits_gpio, "~> 0.3", targets: @all_targets},
       {:phoenix_live_view, "~> 0.17.6"},
       {:floki, ">= 0.30.0", only: :test},
-      {:esbuild, "~> 0.3", runtime: Mix.env() == :dev},
-      {:phoenix_live_reload, "~> 1.2", only: :dev},
+      {:esbuild, "~> 0.3", runtime: Mix.env() == :dev, targets: :host},
+      {:phoenix_live_reload, "~> 1.2", targets: :host},
 
       # Dependencies for specific targets
       # NOTE: It's generally low risk and recommended to follow minor version
@@ -92,7 +92,8 @@ defmodule MetarMap.MixProject do
 
   defp aliases do
     [
-      "assets.deploy": ["esbuild default --minify", "phx.digest"]
+      "assets.deploy": ["esbuild default --minify", "phx.digest"],
+      firmware: ["assets.deploy", "firmware"]
     ]
   end
 end
