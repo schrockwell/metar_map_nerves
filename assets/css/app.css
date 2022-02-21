@@ -8,10 +8,10 @@
 
 @layer components {
   .input {
-    @apply border border-gray-300 shadow-inner rounded;
+    @apply border border-gray-300 shadow-inner;
   }
 
   .btn {
-    @apply px-5 py-3 rounded-full transition-colors bg-gray-200;
+    @apply px-5 py-3 transition-colors bg-gray-200 shadow;
   }
 }

@@ -1,10 +1,4 @@
-<div class="relative bg-grey-light" style="width: 500px; height: 300px">
-    <%= for %{station: station} <- @leds do %>
-        <div class="absolute" style={station_position_style(station)}>
-            •
-        </div>
-    <% end %>
-</div>
+<.map leds={@leds} />
 
 <div>LDR: <%= @ldr %></div>
 
@@ -14,5 +8,5 @@
             <td><%= station.id %></td>
             <td><%= station.metar.category %></td>
         </tr>
-    <% end %>    
+    <% end %>
 </table>

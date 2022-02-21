@@ -3,10 +3,11 @@ defmodule MetarMapWeb.StatusLive do
 
   alias MetarMap.LdrSensor
   alias MetarMap.LedController
-  alias MetarMap.Station
+
+  import MetarMapWeb.MapComponent
 
   @ldr_interval 1_000
-  @leds_interval 60_000
+  @leds_interval 100
 
   def mount(_, _, socket) do
     socket =
@@ -41,9 +42,5 @@ defmodule MetarMapWeb.StatusLive do
   defp assign_leds(socket) do
     leds = LedController.get_all_states() |> Enum.sort_by(& &1.station.id)
     assign(socket, :leds, leds)
-  end
-
-  defp station_position_style(%Station{position: {x, y}}) do
-    "left: #{x * 100}%; top: #{(1.0 - y) * 100}%;"
   end
 end
