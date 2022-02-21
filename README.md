@@ -30,6 +30,7 @@ It was designed to run on a [Raspberry Pi Zero W](https://www.raspberrypi.com/pr
     direnv allow
     # -> or just `source .envrc`
 
+    mix archive.install hex nerves_bootstrap
     mix deps.get
     ```
 

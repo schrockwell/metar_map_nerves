@@ -1,59 +1,58 @@
-<h2 class="mb-4">METAR Map &ndash; Preferences</h2>
+<h2 class="text-xl mb-4">METAR Map &ndash; Preferences</h2>
 
 <%= form_for @changeset, Routes.preferences_path(@conn, :update), fn f -> %>
  <input name="_method" type="hidden" value="patch" />
 
   <div class="mb-3">
     <label>The LEDs display</label>
-    <%= select(f, :mode, [{"flight category", "flight_category"}, {"wind speed", "wind_speed"}, {"ceiling", "ceiling"}, {"visibility", "visibility"}]) %> .
+    <%= select(f, :mode, [{"flight category", "flight_category"}, {"wind speed", "wind_speed"}, {"ceiling", "ceiling"}, {"visibility", "visibility"}], class: "input") %> .
     <%= error_tag(f, :mode) %>
   </div>
 
   <%= if @has_sensor do %>
     <div class="mb-3">
       <label>When the sensor reads below </label>
-      <%= text_input(f, :dark_sensor_pct, class: "w-16") %> %
+      <%= text_input(f, :dark_sensor_pct, class: "input w-16") %> %
       <%= error_tag(f, :dark_sensor_pct) %>
       <label>set the brightness to</label>
-      <%= text_input(f, :dark_brightness_pct, class: "w-16") %> %.
+      <%= text_input(f, :dark_brightness_pct, class: "input w-16") %> %.
       <%= error_tag(f, :dark_brightness_pct) %>
     </div>
 
     <div class="mb-3">
       <label>When the sensor reads above </label>
-      <%= text_input(f, :bright_sensor_pct, class: "w-16") %> %
+      <%= text_input(f, :bright_sensor_pct, class: "input w-16") %> %
       <%= error_tag(f, :bright_sensor_pct) %>
       <label>set the brightness to</label>
-      <%= text_input(f, :bright_brightness_pct, class: "w-16") %> %.
+      <%= text_input(f, :bright_brightness_pct, class: "input w-16") %> %.
       <%= error_tag(f, :bright_brightness_pct) %>
     </div>
   <% else %>
     <div class="mb-3">
       <label>LED brightness is</label>
-      <%= text_input(f, :brightness_pct, class: "w-16") %> %.
+      <%= text_input(f, :brightness_pct, class: "input w-16") %> %.
       <%= error_tag(f, :brightness_pct) %>
     </div>
   <% end %>
 
   <div class="mb-3">
     <label>Flash windy stations when at least</label>
-    <%= text_input(f, :max_wind_kts, class: "w-16") %> kts (0 to disable).
+    <%= text_input(f, :max_wind_kts, class: "input w-16") %> kts (0 to disable).
     <%= error_tag(f, :max_wind_kts) %>
   </div>
 
-
-  <%= submit "Save", class: "px-5 py-3 bg-blue text-white hover:bg-blue-dark" %>
+  <%= submit "Save", class: "btn bg-blue-600 text-white hover:bg-blue-700" %>
 <% end %>
 
 <%= if @has_sensor do %>
   <div class="mt-4">
     <%= button("Calibrate Dark Room",
       to: Routes.preferences_path(@conn, :calibrate_room, room: "dark"),
-      class: "px-5 py-3 bg-grey-darker text-grey-lighter hover:bg-grey-darkest") %>
+      class: "btn text-gray-200 bg-gray-500 hover:bg-gray-600") %>
 
     <%= button("Calibrate Bright Room",
       to: Routes.preferences_path(@conn, :calibrate_room, room: "bright"),
-      class: "px-5 py-3 bg-yellow text-yellow-darker hover:bg-yellow-dark") %>
+      class: "btn text-yellow-800 bg-yellow-300 hover:bg-yellow-400") %>
   </div>
 <% end %>
 

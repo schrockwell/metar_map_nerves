@@ -12,6 +12,14 @@ config :metar_map, MetarMapWeb.Endpoint,
   check_origin: false,
   code_reloader: true,
   debug_errors: true,
+  live_reload: [
+    patterns: [
+      ~r{priv/static/.*(js|css|png|jpeg|jpg|gif)$},
+      ~r{lib/metar_map_web/views/.*(ex)$},
+      ~r{lib/metar_map_web/templates/.*(eex)$}
+    ]
+  ],
   watchers: [
-    esbuild: {Esbuild, :install_and_run, [:default, ~w(--sourcemap=inline --watch)]}
+    esbuild: {Esbuild, :install_and_run, [:default, ~w(--sourcemap=inline --watch)]},
+    tailwind: {Tailwind, :install_and_run, [:default, ~w(--watch)]}
   ]

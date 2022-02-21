@@ -1,11 +1,17 @@
-/* This file is for your main application css. */
-
-input,
-select {
-  border: 1px solid #ccc;
-  padding: 7px 10px;
-}
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 .alert:empty {
   display: none;
+}
+
+@layer components {
+  .input {
+    @apply border border-gray-300 shadow-inner rounded;
+  }
+
+  .btn {
+    @apply px-5 py-3 rounded-full transition-colors bg-gray-200;
+  }
 }

@@ -1,11 +1,11 @@
 <main class="container">
   <%= @inner_content %>
   
-  <div class="my-4 alert text-green" role="alert"
+  <div class="my-4 alert text-green-600" role="alert"
     phx-click="lv:clear-flash"
     phx-value-key="info"><%= live_flash(@flash, :info) %></div>
 
-  <div class="my-4 alert text-red" role="alert"
+  <div class="my-4 alert text-red-600" role="alert"
     phx-click="lv:clear-flash"
     phx-value-key="error"><%= live_flash(@flash, :error) %></div>
 </main>

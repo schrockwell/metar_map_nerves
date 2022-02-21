@@ -35,6 +35,7 @@ defmodule MetarMap.Application do
       {MetarMap.StripController, prefs: prefs},
       {MetarMap.MetarFetcher, stations: stations},
       if(ldr_pin, do: [{MetarMap.LdrSensor, gpio_pin: ldr_pin}], else: []),
+      {Phoenix.PubSub, [name: MetarMap.PubSub, adapter: Phoenix.PubSub.PG2]},
       MetarMapWeb.Endpoint
     ])
   end

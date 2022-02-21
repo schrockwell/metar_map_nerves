@@ -4,7 +4,7 @@
 
 "use strict";
 
-(function() {
+(function () {
   function buildHiddenInput(name, value) {
     var input = document.createElement("input");
     input.type = "hidden";
@@ -36,7 +36,7 @@
 
   window.addEventListener(
     "click",
-    function(e) {
+    function (e) {
       if (e.target && e.target.getAttribute("data-method")) {
         handleLinkClick(e.target);
       }
@@ -47,19 +47,22 @@
 
 ////////////////////   CSS   ////////////////////
 
-import "../css/tailwind.min.css"
-import "../css/app.css"
+import "../css/app.css";
 
 ////////////////////   LIVEVIEW   ////////////////////
 
-import {Socket} from "phoenix"
-import {LiveSocket} from "phoenix_live_view"
+import { Socket } from "phoenix";
+import { LiveSocket } from "phoenix_live_view";
 
-let csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
-let liveSocket = new LiveSocket("/live", Socket, {params: {_csrf_token: csrfToken}})
+let csrfToken = document
+  .querySelector("meta[name='csrf-token']")
+  .getAttribute("content");
+let liveSocket = new LiveSocket("/live", Socket, {
+  params: { _csrf_token: csrfToken },
+});
 
 // Connect if there are any LiveViews on the page
-liveSocket.connect()
+liveSocket.connect();
 
 // Expose liveSocket on window for web console debug logs and latency simulation:
 // >> liveSocket.enableDebug()
@@ -67,4 +70,4 @@ liveSocket.connect()
 // The latency simulator is enabled for the duration of the browser session.
 // Call disableLatencySim() to disable:
 // >> liveSocket.disableLatencySim()
-window.liveSocket = liveSocket
+window.liveSocket = liveSocket;

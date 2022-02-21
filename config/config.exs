@@ -25,7 +25,8 @@ config :metar_map, MetarMapWeb.Endpoint,
   http: [port: 4000],
   url: [host: "localhost", port: 4000],
   secret_key_base: "K93bkfXRGqOFzFsghkZeQvXLJ+aJIPjtIquFjxE4lPktFcr1aS8EaQaMPkvEaHGR",
-  live_view: [signing_salt: "B+4fEsfJDXFt7zLsKD+c9BmsM1UNn9zB"]
+  live_view: [signing_salt: "B+4fEsfJDXFt7zLsKD+c9BmsM1UNn9zB"],
+  pubsub_server: MetarMap.PubSub
 
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
@@ -36,6 +37,17 @@ config :esbuild,
     args: ~w(js/app.js --bundle --target=es2016 --outdir=../priv/static/assets),
     cd: Path.expand("../assets", __DIR__),
     env: %{"NODE_PATH" => Path.expand("../deps", __DIR__)}
+  ]
+
+config :tailwind,
+  version: "3.0.7",
+  default: [
+    args: ~w(
+      --config=tailwind.config.js
+      --input=css/app.css
+      --output=../priv/static/assets/app.css
+    ),
+    cd: Path.expand("../assets", __DIR__)
   ]
 
 # Station and LED config
