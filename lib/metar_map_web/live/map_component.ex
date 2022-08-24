@@ -22,6 +22,8 @@ defmodule MetarMapWeb.MapComponent do
     "background-color: #{bg_color}; border-color: #{border_color}; width: 1.5vw; height: 1.5vw; left: calc(#{x * 100}% - 0.75vw); top: calc(#{(1.0 - y) * 100}% - 0.75vw);"
   end
 
+  defp station_position_style(_led), do: "display: none;"
+
   defp color_to_hex(color) do
     r = color.r |> Integer.to_string(16) |> String.pad_leading(2, "0")
     g = color.g |> Integer.to_string(16) |> String.pad_leading(2, "0")

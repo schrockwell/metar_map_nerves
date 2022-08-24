@@ -43,4 +43,7 @@ defmodule MetarMapWeb.StatusLive do
     leds = LedController.get_all_states() |> Enum.sort_by(& &1.station.id)
     assign(socket, :leds, leds)
   end
+
+  defp station_category(%{metar: nil}), do: "N/A"
+  defp station_category(station), do: station.metar.category
 end

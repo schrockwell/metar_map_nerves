@@ -6,7 +6,7 @@
     <%= for %{station: station} <- @leds do %>
         <tr>
             <td><%= station.id %></td>
-            <td><%= station.metar.category %></td>
+            <td><%= station_category(station) %></td>
         </tr>
     <% end %>
 </table>
