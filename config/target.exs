@@ -117,8 +117,7 @@ config :mdns_lite,
 config :metar_map,
   display_adapter: MetarMap.Display.TargetAdapter,
   gpio_adapter: MetarMap.Gpio.TargetAdapter,
-  dets_config_path: "/root/dets_config",
-  ldr_pin: 4
+  dets_config_path: "/root/dets_config"
 
 # Configures the Phoenix endpoint
 config :metar_map, MetarMapWeb.Endpoint,

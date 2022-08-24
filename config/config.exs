@@ -5,6 +5,9 @@
 # this project.
 import Config
 
+map_config_path = Path.join([__DIR__, "maps", "#{System.fetch_env!("MAP_CONFIG")}.exs"])
+import_config map_config_path
+
 # Enable the Nerves integration with Mix
 Application.start(:nerves_bootstrap)
 
@@ -49,9 +52,6 @@ config :tailwind,
     ),
     cd: Path.expand("../assets", __DIR__)
   ]
-
-# Station and LED config
-import_config "stations.exs"
 
 if Mix.target() == :host or Mix.target() == :"" do
   import_config "host.exs"

@@ -1,7 +1,16 @@
 import Config
 
-# The stations are an array of tuples containing the full airport identifier and the LED
-# index (zero-based).
+# The total number of WS281x LEDs in the string
+led_count = 100
+
+# The GPIO pin for WS281x LED data control.
+# To see available pins, read: https://github.com/jgarff/rpi_ws281x#gpio-usage
+led_pin = 18
+
+# LDR input pin
+ldr_pin = 4
+
+# Airports
 stations = [
   {"KACK", 3},
   {"KMVY", 5},
@@ -77,4 +86,23 @@ stations = [
 ]
 
 config :metar_map,
+  ldr_pin: 4,
   stations: stations
+
+config :blinkchain,
+  canvas: {led_count, 1},
+  # Default DMA channel 5 does not work for Nerves for some reason, but 4 works (via experimentation)
+  # https://github.com/GregMefford/blinkchain/issues/27#issuecomment-777936127
+  dma_channel: 4
+
+config :blinkchain, :channel0,
+  pin: led_pin,
+  type: :rgb,
+  arrangement: [
+    %{
+      type: :strip,
+      origin: {0, 0},
+      count: led_count,
+      direction: :right
+    }
+  ]

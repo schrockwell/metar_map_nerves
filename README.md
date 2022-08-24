@@ -8,43 +8,38 @@ It was designed to run on a [Raspberry Pi Zero W](https://www.raspberrypi.com/pr
 
 ## Prerequisites
 
-* [asdf](http://asdf-vm.com) installs of:
-  * Elixir 1.13.1
-  * Erlang 24.1.7
-* [Nerves installation](https://hexdocs.pm/nerves/installation.html)
-* [direnv](https://direnv.net) (optional)
+- [asdf](http://asdf-vm.com) installs of:
+  - Elixir 1.13.1
+  - Erlang 24.1.7
+- [Nerves installation](https://hexdocs.pm/nerves/installation.html)
+- [direnv](https://direnv.net) (optional)
 
 ## Building the firmware
 
-1. Copy `.envrc-example` to `.envrc` and modify it the environment variables as appropriate.
+1. Copy an existing map config file, e.g. `config/maps/ny_rpi0.exs`, and modify.
 
-2. Edit the config files:
-
-        config/blinkchian.exs  -> with the LED data pin and configuration
-        config/stations.exs    -> with the list of METAR station IDs
-        config/target.exs      -> with the LDR pin
+2. Copy `.envrc-example` to `.envrc` and modify the environment variables.
 
 3. Set up the environment.
 
-    ```bash
-    direnv allow
-    # -> or just `source .envrc`
-
-    mix archive.install hex nerves_bootstrap
-    mix deps.get
-    ```
+   ```bash
+   direnv allow
+   asdf install
+   mix archive.install hex nerves_bootstrap
+   mix deps.get
+   ```
 
 4. Build and upload the firmware.
 
-    ```bash
-    mix firmware
+   ```bash
+   mix firmware
 
-    # Burn to an SD card
-    mix burn
+   # Burn to an SD card
+   mix burn
 
-    # -OR- upload to an existing Pi
-    mix upload metar-map.local
-    ```
+   # -OR- upload to an existing Pi
+   mix upload metar-map.local
+   ```
 
 ## Testing locally on the host machine
 
