@@ -1,14 +1,14 @@
 import Config
 
 # The total number of WS281x LEDs in the string
-led_count = 100
+led_count = 50
 
 # The GPIO pin for WS281x LED data control.
 # To see available pins, read: https://github.com/jgarff/rpi_ws281x#gpio-usage
 led_pin = 18
 
 # LDR input pin
-ldr_pin = 4
+ldr_pin = false
 
 # Airports
 stations = [
@@ -61,14 +61,14 @@ stations = [
   {"KPDG", 47},
   {"K54A", 48},
   {"KVNC", 49},
-  {"KSRQ", 50},
-  {"KOBE", 51},
-  {"KSEF", 52},
-  {"KAGR", 53}
+  {"KSRQ", 50}
+  # {"KOBE", 51},
+  # {"KSEF", 52},
+  # {"KAGR", 53}
 ]
 
 config :metar_map,
-  ldr_pin: 4,
+  ldr_pin: ldr_pin,
   stations: stations
 
 config :blinkchain,
