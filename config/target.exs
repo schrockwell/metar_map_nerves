@@ -87,7 +87,7 @@ config :mdns_lite,
   # "nerves.local" for convenience. If more than one Nerves device is on the
   # network, delete "nerves" from the list.
 
-  host: [:hostname, "metar-map"],
+  host: [:hostname, System.get_env("HOSTNAME", "metar-map")],
   ttl: 120,
 
   # Advertise the following services over mDNS.
