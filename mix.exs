@@ -50,7 +50,7 @@ defmodule MetarMap.MixProject do
       {:sweet_xml, "~> 0.6.5"},
       {:blinkchain,
        git: "https://github.com/valiot/blinkchain.git",
-       ref: "master-blinkchain",
+       ref: "c447e433586c359720c3f9a7b7b9cd2fa02489f2",
        submodules: true,
        targets: @all_targets},
       {:httpoison, "~> 1.5"},
