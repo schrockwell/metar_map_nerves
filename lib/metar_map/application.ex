@@ -5,11 +5,15 @@ defmodule MetarMap.Application do
 
   use Application
 
+  require Logger
+
+  @supervisor MetarMap.Supervisor
+
   @impl true
   def start(_type, _args) do
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
-    opts = [strategy: :one_for_one, name: MetarMap.Supervisor]
+    opts = [strategy: :one_for_one, name: @supervisor]
 
     children =
       [
@@ -18,7 +22,10 @@ defmodule MetarMap.Application do
         # {MetarMap.Worker, arg},
       ] ++ children(target())
 
-    Supervisor.start_link(children, opts)
+    with {:ok, sup} <- Supervisor.start_link(children, opts) do
+      maybe_start_wifi_wizard()
+      {:ok, sup}
+    end
   end
 
   def children(_target) do
@@ -35,8 +42,8 @@ defmodule MetarMap.Application do
       {MetarMap.StripController, prefs: prefs},
       {MetarMap.MetarFetcher, stations: stations},
       if(ldr_pin, do: [{MetarMap.LdrSensor, gpio_pin: ldr_pin}], else: []),
-      {Phoenix.PubSub, [name: MetarMap.PubSub, adapter: Phoenix.PubSub.PG2]},
-      MetarMapWeb.Endpoint
+      {Phoenix.PubSub, [name: MetarMap.PubSub, adapter: Phoenix.PubSub.PG2]}
+      # MetarMapWeb.Endpoint
     ])
   end
 
@@ -50,5 +57,29 @@ defmodule MetarMap.Application do
   def config_change(changed, _new, removed) do
     MetarMapWeb.Endpoint.config_change(changed, removed)
     :ok
+  end
+
+  defp maybe_start_wifi_wizard do
+    case VintageNetWizard.run_if_unconfigured(on_exit: {__MODULE__, :handle_on_exit, []}) do
+      :ok ->
+        Logger.info("WiFi not configured; launching wizard")
+
+      :configured ->
+        Logger.info("WiFi already configured; starting Phoenix")
+        start_endpoint()
+
+      {:error, message} ->
+        Logger.warn("Error starting VintageNetWizard: #{message}")
+        start_endpoint()
+    end
+  end
+
+  def handle_on_exit do
+    Logger.info("WiFi wizard exited; starting Phoenix now")
+    start_endpoint()
+  end
+
+  defp start_endpoint do
+    Supervisor.start_child(@supervisor, MetarMapWeb.Endpoint)
   end
 end

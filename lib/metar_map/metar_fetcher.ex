@@ -5,9 +5,14 @@ defmodule MetarMap.MetarFetcher do
   alias MetarMap.{AviationWeather, Metar, LedController}
 
   @poll_interval_ms 60_000
+  @name __MODULE__
 
   def start_link(opts) do
-    GenServer.start_link(__MODULE__, opts, name: __MODULE__)
+    GenServer.start_link(__MODULE__, opts, name: @name)
+  end
+
+  def poll do
+    send(@name, :poll)
   end
 
   @impl true
@@ -17,11 +22,29 @@ defmodule MetarMap.MetarFetcher do
 
     send(self(), :poll)
 
-    {:ok, %{station_ids: station_ids}}
+    VintageNet.subscribe(["interface", "wlan0", "connection"])
+
+    {:ok, %{station_ids: station_ids, poll_ref: nil}}
   end
 
   @impl true
+  def handle_info(
+        {VintageNet, ["interface", "wlan0", "connection"], _old_value, new_value, _metadata},
+        state
+      ) do
+    if new_value == :internet do
+      Logger.info("[MetarFetcher] Internet connection established; polling now")
+      Process.send_after(self(), :poll, 5_000)
+    end
+
+    {:noreply, state}
+  end
+
   def handle_info(:poll, state) do
+    if state.poll_ref do
+      Process.cancel_timer(state.poll_ref)
+    end
+
     state.station_ids
     |> AviationWeather.fetch_latest_metars()
     |> case do
@@ -51,8 +74,8 @@ defmodule MetarMap.MetarFetcher do
         Logger.warn("[MetarFetcher] Error fetching METARs")
     end
 
-    Process.send_after(self(), :poll, @poll_interval_ms)
+    poll_ref = Process.send_after(self(), :poll, @poll_interval_ms)
 
-    {:noreply, state}
+    {:noreply, %{state | poll_ref: poll_ref}}
   end
 end

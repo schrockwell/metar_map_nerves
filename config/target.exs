@@ -67,15 +67,15 @@ config :vintage_net,
     {"wlan0",
      %{
        type: VintageNetWiFi,
-       vintage_net_wifi: %{
-         networks: [
-           %{
-             key_mgmt: :wpa_psk,
-             ssid: System.fetch_env!("VINGATE_NET_WIFI_SSID"),
-             psk: System.fetch_env!("VINTAGE_NET_WIFI_PSK")
-           }
-         ]
-       },
+       #  vintage_net_wifi: %{
+       #    networks: [
+       #      %{
+       #        key_mgmt: :wpa_psk,
+       #        ssid: System.get_env("VINGATE_NET_WIFI_SSID"),
+       #        psk: System.get_env("VINTAGE_NET_WIFI_PSK")
+       #      }
+       #    ]
+       #  },
        ipv4: %{method: :dhcp}
      }}
   ]
