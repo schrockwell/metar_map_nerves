@@ -7,6 +7,8 @@ defmodule MetarMap.Application do
 
   require Logger
 
+  alias MetarMap.LedController
+
   @supervisor MetarMap.Supervisor
 
   @impl true
@@ -63,9 +65,11 @@ defmodule MetarMap.Application do
     case VintageNetWizard.run_if_unconfigured(on_exit: {__MODULE__, :handle_on_exit, []}) do
       :ok ->
         Logger.info("WiFi not configured; launching wizard")
+        LedController.put_one_display_mode({:flashing, :purple})
 
       :configured ->
         Logger.info("WiFi already configured; starting Phoenix")
+        LedController.put_one_display_mode({:flashing, :green})
         start_endpoint()
 
       {:error, message} ->
@@ -76,6 +80,7 @@ defmodule MetarMap.Application do
 
   def handle_on_exit do
     Logger.info("WiFi wizard exited; starting Phoenix now")
+    LedController.put_one_display_mode({:flashing, :green})
     start_endpoint()
   end
 

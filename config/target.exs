@@ -80,6 +80,8 @@ config :vintage_net,
      }}
   ]
 
+config :vintage_net_wizard, ssid: "METAR Map Setup"
+
 config :mdns_lite,
   # The `host` key specifies what hostnames mdns_lite advertises.  `:hostname`
   # advertises the device's hostname.local. For the official Nerves systems, this
@@ -122,7 +124,7 @@ config :metar_map,
 # Configures the Phoenix endpoint
 config :metar_map, MetarMapWeb.Endpoint,
   http: [port: 80],
-  url: [host: "metar-map.local", port: 80],
+  url: [host: "#{System.fetch_env!("HOSTNAME")}.local", port: 80],
   server: true,
   cache_static_manifest: "priv/static/cache_manifest.json"
 

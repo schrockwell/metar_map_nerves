@@ -8,8 +8,10 @@ defmodule MetarMap.LedController do
   @registry __MODULE__.Registry
 
   @frame_interval_ms 40
-  @fade_duration_ms 1500
-  @wipe_duration_ms 2000
+  @flash_fade_duration_ms 500
+  @fade_duration_ms 1_500
+  @wipe_duration_ms 2_000
+  @flash_interval_ms 3_000
   @flicker_probability 0.2
   @flicker_brightness 0.7
 
@@ -30,9 +32,12 @@ defmodule MetarMap.LedController do
       :timeline,
       :prefs,
       :latest_color,
-      :initialized,
+      :initialized?,
       :pixel,
-      :flicker
+      :flicker?,
+      :display_mode,
+      :frame_timer_ref,
+      :flash_timer_ref
     ]
   end
 
@@ -45,10 +50,32 @@ defmodule MetarMap.LedController do
   end
 
   def put_prefs(prefs) do
-    Registry.dispatch(__MODULE__.Registry, nil, fn entries ->
+    Registry.dispatch(@registry, nil, fn entries ->
       for {pid, _id} <- entries do
         GenServer.cast(pid, {:put_prefs, prefs})
       end
+    end)
+  end
+
+  def put_all_display_mode(mode) do
+    Registry.dispatch(@registry, nil, fn entries ->
+      Enum.each(entries, fn {pid, _id} ->
+        GenServer.cast(pid, {:put_display_mode, mode})
+      end)
+    end)
+  end
+
+  def put_one_display_mode(mode) do
+    Registry.dispatch(@registry, nil, fn
+      [] ->
+        :ok
+
+      [{first, _id} | rest] ->
+        GenServer.cast(first, {:put_display_mode, mode})
+
+        Enum.each(rest, fn {pid, _id} ->
+          GenServer.cast(pid, {:put_display_mode, :off})
+        end)
     end)
   end
 
@@ -84,15 +111,16 @@ defmodule MetarMap.LedController do
   def init({station, prefs}) do
     {:ok, _} = Registry.register(@registry, nil, station.id)
 
-    trigger_frame()
+    start_animation()
 
     {:ok,
      %State{
        station: station,
        prefs: prefs,
        timeline: Timeline.init(@colors.off, {MetarMap.Interpolation, :blend_colors}),
-       initialized: false,
-       pixel: {station.index, 0}
+       initialized?: false,
+       pixel: {station.index, 0},
+       display_mode: :off
      }}
   end
 
@@ -104,27 +132,16 @@ defmodule MetarMap.LedController do
       |> Station.put_metar(metar)
       |> put_station_position(metar, bounds)
 
-    # Logger.debug(
-    #   Enum.join(
-    #     [
-    #       "[#{next_station.id}]",
-    #       next_station |> Station.get_category() |> Atom.to_string() |> String.upcase(),
-    #       "#{Station.get_max_wind(next_station)} kts"
-    #     ],
-    #     " "
-    #   )
-    # )
-
     if Station.get_category(next_station) == :unknown do
       Logger.warn("[#{next_station.id}] Flight category unknown")
     end
 
-    next_state = %{state | station: next_station, initialized: true}
-    delay_ms = if state.initialized, do: 0, else: wipe_delay_ms(next_state)
+    start_animation()
+    delay_ms = if state.initialized?, do: 0, else: wipe_delay_ms(state)
+    state = %State{state | station: next_station, initialized?: true, display_mode: :metar}
+    next_timeline = update_station_color(state, delay_ms: delay_ms)
 
-    trigger_frame()
-
-    {:noreply, update_station_color(next_state, delay_ms: delay_ms)}
+    {:noreply, %State{state | timeline: next_timeline} |> cancel_flash_timer()}
   end
 
   def handle_cast({:put_prefs, new_prefs}, state) do
@@ -139,54 +156,90 @@ defmodule MetarMap.LedController do
         state.timeline
       end
 
-    trigger_frame()
+    start_animation()
 
-    {:noreply, %{state | prefs: new_prefs, timeline: timeline}}
+    {:noreply, %State{state | prefs: new_prefs, timeline: timeline}}
+  end
+
+  def handle_cast({:put_display_mode, display_mode}, %{display_mode: display_mode} = state),
+    do: {:noreply, state}
+
+  def handle_cast({:put_display_mode, display_mode}, state) do
+    {:noreply, do_put_display_mode(state, display_mode)}
+  end
+
+  # Only kick off animations if we aren't already animating
+  def handle_info(:start_animation, %{frame_timer_ref: nil} = state) do
+    {:noreply, animate(state)}
+  end
+
+  def handle_info(:start_animation, state) do
+    {:noreply, state}
   end
 
   def handle_info(:frame, state) do
-    is_flickering = is_windy?(state)
+    {:noreply, animate(state)}
+  end
 
-    # Kick off the next frame ASAP if necessary
-    if is_flickering or !Timeline.empty?(state.timeline) do
-      trigger_frame(@frame_interval_ms)
-    end
+  def handle_info({:flash, color}, state) do
+    timeline =
+      state.timeline
+      |> Timeline.append(@flash_fade_duration_ms, Map.fetch!(@colors, color))
+      |> Timeline.append(@flash_fade_duration_ms, Map.fetch!(@colors, color))
+      |> Timeline.append(@flash_fade_duration_ms, @colors.off)
 
-    {color, timeline} = Timeline.evaluate(state.timeline)
+    timer_ref = Process.send_after(self(), {:flash, color}, @flash_interval_ms)
 
-    # Randomly toggle the flickering if it's windy
-    next_flicker =
-      cond do
-        !is_flickering -> false
-        :rand.uniform() < @flicker_probability -> !state.flicker
-        true -> state.flicker
-      end
+    start_animation()
 
-    # If flickering, dim it to 80%
-    color = if next_flicker, do: MetarMap.brighten(color, @flicker_brightness), else: color
-
-    # For performance - only update if necessary
-    if color != state.latest_color do
-      Display.set_pixel(state.pixel, color)
-    end
-
-    {:noreply, %{state | timeline: timeline, latest_color: color, flicker: next_flicker}}
+    {:noreply, %State{state | timeline: timeline, flash_timer_ref: timer_ref}}
   end
 
   def terminate(_, state) do
     Display.set_pixel(state.pixel, @colors.off)
   end
 
-  defp update_station_color(state, opts) do
+  defp animate(state) do
+    is_flickering = is_windy?(state)
+
+    # Kick off the next frame ASAP if necessary
+    state =
+      if is_flickering or !Timeline.empty?(state.timeline) do
+        trigger_delayed_frame(state, @frame_interval_ms)
+      else
+        %State{state | frame_timer_ref: nil}
+      end
+
+    {color, timeline} = Timeline.evaluate(state.timeline)
+
+    # Randomly toggle the flickering if it's windy
+    next_flicker? =
+      cond do
+        !is_flickering -> false
+        :rand.uniform() < @flicker_probability -> !state.flicker?
+        true -> state.flicker?
+      end
+
+    # If flickering, dim it to 80%
+    color = if next_flicker?, do: MetarMap.brighten(color, @flicker_brightness), else: color
+
+    # For performance - only update if necessary
+    if color != state.latest_color do
+      Display.set_pixel(state.pixel, color)
+    end
+
+    %State{state | timeline: timeline, latest_color: color, flicker?: next_flicker?}
+  end
+
+  defp update_station_color(state, opts \\ []) do
     next_color = station_color(state.station, state.prefs.mode)
 
     if next_color != state.timeline.latest_value do
       delay_ms = Keyword.get(opts, :delay_ms, 0)
       duration_ms = Keyword.get(opts, :duration_ms, @fade_duration_ms)
-      timeline = Timeline.append(state.timeline, duration_ms, next_color, min_delay_ms: delay_ms)
-      %{state | timeline: timeline}
+      Timeline.append(state.timeline, duration_ms, next_color, min_delay_ms: delay_ms)
     else
-      state
+      state.timeline
     end
   end
 
@@ -251,21 +304,75 @@ defmodule MetarMap.LedController do
     x_position = MetarMap.normalize(min_lon, max_lon, metar.longitude)
     y_position = MetarMap.normalize(min_lat, max_lat, metar.latitude)
 
-    %{station | position: {x_position, y_position}}
+    %Station{station | position: {x_position, y_position}}
   end
 
   defp put_station_position(station, _metar, _bounds), do: station
 
   defp is_windy?(state) do
-    state.prefs.max_wind_kts > 0 and
+    state.display_mode == :metar and
+      state.prefs.max_wind_kts > 0 and
       Station.get_max_wind(state.station) >= state.prefs.max_wind_kts
   end
 
-  defp trigger_frame() do
-    send(self(), :frame)
+  defp start_animation do
+    send(self(), :start_animation)
   end
 
-  defp trigger_frame(delay_ms) do
-    Process.send_after(self(), :frame, delay_ms)
+  defp trigger_delayed_frame(state, delay_ms) do
+    timer_ref = Process.send_after(self(), :frame, delay_ms)
+    %State{state | frame_timer_ref: timer_ref}
+  end
+
+  defp do_put_display_mode(state, display_mode) do
+    state = cancel_flash_timer(state)
+
+    next_timeline =
+      case display_mode do
+        :off ->
+          state.timeline
+          |> Timeline.abort()
+          |> Timeline.append(@fade_duration_ms, @colors.off)
+
+        :metar ->
+          update_station_color(state)
+
+        {:flashing, _color} ->
+          state.timeline
+          |> Timeline.abort()
+          |> Timeline.append(@fade_duration_ms, @colors.off)
+
+        {:solid, color} ->
+          state.timeline
+          |> Timeline.abort()
+          |> Timeline.append(@fade_duration_ms, @colors.off)
+          |> Timeline.append(@fade_duration_ms, Map.fetch!(@colors, color))
+
+        _else ->
+          state.timeline
+      end
+
+    timer_ref =
+      case display_mode do
+        {:flashing, color} -> Process.send_after(self(), {:flash, color}, @flash_interval_ms)
+        _else -> nil
+      end
+
+    start_animation()
+
+    %State{
+      state
+      | display_mode: display_mode,
+        timeline: next_timeline,
+        flash_timer_ref: timer_ref
+    }
+  end
+
+  defp cancel_flash_timer(state) do
+    if state.flash_timer_ref do
+      Process.cancel_timer(state.flash_timer_ref)
+    end
+
+    %State{state | flash_timer_ref: nil}
   end
 end

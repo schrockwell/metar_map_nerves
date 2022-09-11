@@ -12,8 +12,8 @@ ldr_pin = false
 
 # Airports
 stations = [
-  {"KBKV", 1},
-  {"KZPH", 2},
+  {"KZPH", 1},
+  {"KBKV", 2},
   {"KCLW", 3},
   {"KPIE", 4},
   {"KTPA", 5},
