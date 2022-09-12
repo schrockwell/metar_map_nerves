@@ -32,7 +32,6 @@ defmodule MetarMap.LedController do
       :timeline,
       :prefs,
       :latest_color,
-      :initialized?,
       :pixel,
       :flicker?,
       :display_mode,
@@ -118,7 +117,6 @@ defmodule MetarMap.LedController do
        station: station,
        prefs: prefs,
        timeline: Timeline.init(@colors.off, {MetarMap.Interpolation, :blend_colors}),
-       initialized?: false,
        pixel: {station.index, 0},
        display_mode: :off
      }}
@@ -136,12 +134,18 @@ defmodule MetarMap.LedController do
       Logger.warn("[#{next_station.id}] Flight category unknown")
     end
 
-    start_animation()
-    delay_ms = if state.initialized?, do: 0, else: wipe_delay_ms(state)
-    state = %State{state | station: next_station, initialized?: true, display_mode: :metar}
-    next_timeline = update_station_color(state, delay_ms: delay_ms)
+    state = %State{state | station: next_station}
 
-    {:noreply, %State{state | timeline: next_timeline} |> cancel_flash_timer()}
+    state =
+      if state.display_mode == :metar do
+        start_animation()
+        next_timeline = update_station_color(state.timeline, state)
+        %State{state | timeline: next_timeline}
+      else
+        state
+      end
+
+    {:noreply, state}
   end
 
   def handle_cast({:put_prefs, new_prefs}, state) do
@@ -160,9 +164,6 @@ defmodule MetarMap.LedController do
 
     {:noreply, %State{state | prefs: new_prefs, timeline: timeline}}
   end
-
-  def handle_cast({:put_display_mode, display_mode}, %{display_mode: display_mode} = state),
-    do: {:noreply, state}
 
   def handle_cast({:put_display_mode, display_mode}, state) do
     {:noreply, do_put_display_mode(state, display_mode)}
@@ -231,15 +232,15 @@ defmodule MetarMap.LedController do
     %State{state | timeline: timeline, latest_color: color, flicker?: next_flicker?}
   end
 
-  defp update_station_color(state, opts \\ []) do
+  defp update_station_color(timeline, state, opts \\ []) do
     next_color = station_color(state.station, state.prefs.mode)
 
-    if next_color != state.timeline.latest_value do
+    if next_color != timeline.latest_value do
       delay_ms = Keyword.get(opts, :delay_ms, 0)
       duration_ms = Keyword.get(opts, :duration_ms, @fade_duration_ms)
-      Timeline.append(state.timeline, duration_ms, next_color, min_delay_ms: delay_ms)
+      Timeline.append(timeline, duration_ms, next_color, min_delay_ms: delay_ms)
     else
-      state.timeline
+      timeline
     end
   end
 
@@ -324,6 +325,8 @@ defmodule MetarMap.LedController do
     %State{state | frame_timer_ref: timer_ref}
   end
 
+  defp do_put_display_mode(%{display_mode: display_mode} = state, display_mode), do: state
+
   defp do_put_display_mode(state, display_mode) do
     state = cancel_flash_timer(state)
 
@@ -335,7 +338,10 @@ defmodule MetarMap.LedController do
           |> Timeline.append(@fade_duration_ms, @colors.off)
 
         :metar ->
-          update_station_color(state)
+          state.timeline
+          |> Timeline.abort()
+          |> Timeline.append(@fade_duration_ms, @colors.off)
+          |> update_station_color(state, delay_ms: wipe_delay_ms(state))
 
         {:flashing, _color} ->
           state.timeline

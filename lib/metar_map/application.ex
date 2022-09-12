@@ -7,8 +7,6 @@ defmodule MetarMap.Application do
 
   require Logger
 
-  alias MetarMap.LedController
-
   @supervisor MetarMap.Supervisor
 
   @impl true
@@ -63,12 +61,6 @@ defmodule MetarMap.Application do
   def config_change(changed, _new, removed) do
     MetarMapWeb.Endpoint.config_change(changed, removed)
     :ok
-  end
-
-  def handle_on_exit do
-    Logger.info("WiFi wizard exited; starting Phoenix now")
-    LedController.put_one_display_mode({:flashing, :green})
-    start_endpoint()
   end
 
   def start_endpoint do
