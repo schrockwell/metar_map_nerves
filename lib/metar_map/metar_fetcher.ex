@@ -2,7 +2,7 @@ defmodule MetarMap.MetarFetcher do
   use GenServer
   require Logger
 
-  alias MetarMap.{AviationWeather, Metar, LedController}
+  alias MetarMap.{AviationWeather, Metar, LedController, ConnectionWatcher}
 
   @poll_interval_ms 60_000
   @name __MODULE__
@@ -68,9 +68,11 @@ defmodule MetarMap.MetarFetcher do
           Logger.warn("[MetarFetcher] Could not fetch: #{Enum.join(missing_ids, ", ")}")
         end
 
+        ConnectionWatcher.put_fetch_ok(true)
         Logger.info("[MetarFetcher] Retrieved #{length(metars)} METARs")
 
       _ ->
+        ConnectionWatcher.put_fetch_ok(false)
         Logger.warn("[MetarFetcher] Error fetching METARs")
     end
 

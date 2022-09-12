@@ -24,10 +24,7 @@ defmodule MetarMap.Application do
         # {MetarMap.Worker, arg},
       ] ++ children(target())
 
-    with {:ok, sup} <- Supervisor.start_link(children, opts) do
-      maybe_start_wifi_wizard()
-      {:ok, sup}
-    end
+    Supervisor.start_link(children, opts)
   end
 
   def children(_target) do
@@ -39,13 +36,20 @@ defmodule MetarMap.Application do
 
     # List all child processes to be supervised
     List.flatten([
+      {Phoenix.PubSub, [name: MetarMap.PubSub, adapter: Phoenix.PubSub.PG2]},
       {Registry, keys: :duplicate, name: MetarMap.LedController.Registry},
       Enum.map(stations, &{MetarMap.LedController, station: &1, prefs: prefs}),
       {MetarMap.StripController, prefs: prefs},
+
+      # This has to be before ConnectionWatcher
+      MetarMapWeb.Endpoint,
+
+      # This has to be after the Endpoint
+      MetarMap.ConnectionWatcher,
+
+      # This has to be after ConnectionWatcher
       {MetarMap.MetarFetcher, stations: stations},
-      if(ldr_pin, do: [{MetarMap.LdrSensor, gpio_pin: ldr_pin}], else: []),
-      {Phoenix.PubSub, [name: MetarMap.PubSub, adapter: Phoenix.PubSub.PG2]}
-      # MetarMapWeb.Endpoint
+      if(ldr_pin, do: [{MetarMap.LdrSensor, gpio_pin: ldr_pin}], else: [])
     ])
   end
 
@@ -61,30 +65,17 @@ defmodule MetarMap.Application do
     :ok
   end
 
-  defp maybe_start_wifi_wizard do
-    case VintageNetWizard.run_if_unconfigured(on_exit: {__MODULE__, :handle_on_exit, []}) do
-      :ok ->
-        Logger.info("WiFi not configured; launching wizard")
-        LedController.put_one_display_mode({:flashing, :purple})
-
-      :configured ->
-        Logger.info("WiFi already configured; starting Phoenix")
-        LedController.put_one_display_mode({:flashing, :green})
-        start_endpoint()
-
-      {:error, message} ->
-        Logger.warn("Error starting VintageNetWizard: #{message}")
-        start_endpoint()
-    end
-  end
-
   def handle_on_exit do
     Logger.info("WiFi wizard exited; starting Phoenix now")
     LedController.put_one_display_mode({:flashing, :green})
     start_endpoint()
   end
 
-  defp start_endpoint do
+  def start_endpoint do
     Supervisor.start_child(@supervisor, MetarMapWeb.Endpoint)
+  end
+
+  def stop_endpoint do
+    Supervisor.terminate_child(@supervisor, MetarMapWeb.Endpoint)
   end
 end
