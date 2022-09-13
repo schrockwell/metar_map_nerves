@@ -27,7 +27,7 @@ defmodule MetarMap.LdrSensor do
     end
   end
 
-  def available?() do
+  def available? do
     !!Process.whereis(__MODULE__)
   end
 

@@ -51,7 +51,7 @@ defmodule MetarMap.Application do
     ])
   end
 
-  def target() do
+  def target do
     Application.get_env(:metar_map, :target)
   end
 

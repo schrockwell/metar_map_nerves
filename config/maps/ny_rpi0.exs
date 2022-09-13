@@ -86,7 +86,7 @@ stations = [
 ]
 
 config :metar_map,
-  ldr_pin: 4,
+  ldr_pin: ldr_pin,
   stations: stations
 
 config :blinkchain,
