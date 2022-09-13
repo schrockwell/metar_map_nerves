@@ -53,31 +53,32 @@ if keys == [],
 config :nerves_ssh,
   authorized_keys: Enum.map(keys, &File.read!/1)
 
+# Only hardcode wifi credentials if they exist in the ENV; otherwise, fall back on
+# VintageNetWizard
+wlan0_config =
+  with {:ok, ssid} <- System.fetch_env("VINGATE_NET_WIFI_SSID"),
+       {:ok, psk} <- System.fetch_env("VINTAGE_NET_WIFI_PSK") do
+    %{
+      type: VintageNetWiFi,
+      ipv4: %{method: :dhcp},
+      vintage_net_wifi: %{networks: [%{key_mgmt: :wpa_psk, ssid: ssid, psk: psk}]}
+    }
+  else
+    _ ->
+      %{
+        type: VintageNetWiFi,
+        ipv4: %{method: :dhcp}
+      }
+  end
+
 # Configure the network using vintage_net
 # See https://github.com/nerves-networking/vintage_net for more information
 config :vintage_net,
   regulatory_domain: "US",
   config: [
     {"usb0", %{type: VintageNetDirect}},
-    {"eth0",
-     %{
-       type: VintageNetEthernet,
-       ipv4: %{method: :dhcp}
-     }},
-    {"wlan0",
-     %{
-       type: VintageNetWiFi,
-       #  vintage_net_wifi: %{
-       #    networks: [
-       #      %{
-       #        key_mgmt: :wpa_psk,
-       #        ssid: System.get_env("VINGATE_NET_WIFI_SSID"),
-       #        psk: System.get_env("VINTAGE_NET_WIFI_PSK")
-       #      }
-       #    ]
-       #  },
-       ipv4: %{method: :dhcp}
-     }}
+    {"eth0", %{type: VintageNetEthernet, ipv4: %{method: :dhcp}}},
+    {"wlan0", wlan0_config}
   ]
 
 config :vintage_net_wizard, ssid: "METAR Map Setup"

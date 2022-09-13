@@ -139,7 +139,10 @@ defmodule MetarMap.LedController do
     state =
       if state.display_mode == :metar do
         start_animation()
-        next_timeline = update_station_color(state.timeline, state)
+
+        next_timeline =
+          update_station_color(state.timeline, state, delay_ms: wipe_delay_ms(state))
+
         %State{state | timeline: next_timeline}
       else
         state

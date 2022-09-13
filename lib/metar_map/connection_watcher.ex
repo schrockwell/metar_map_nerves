@@ -8,6 +8,14 @@ defmodule MetarMap.ConnectionWatcher do
   @interface "wlan0"
   @connection_property ["interface", @interface, "connection"]
 
+  @display_modes %{
+    new: {:flashing, :green},
+    no_wifi_config: {:flashing, :purple},
+    no_internet_connection: {:flashing, :red},
+    no_data: {:flashing, :blue},
+    ok: :metar
+  }
+
   def start_link(_) do
     GenServer.start_link(__MODULE__, [], name: __MODULE__)
   end
@@ -23,19 +31,21 @@ defmodule MetarMap.ConnectionWatcher do
   def init(_) do
     VintageNet.subscribe(@connection_property)
 
+    # Must come BEFORE handle_new_status/1 so we don't overwrite whatever it sets
+    LedController.put_one_display_mode(@display_modes.new)
+
     state =
       %{
         status: :new,
         wifi_configured?: false,
         connection_status: :disconnected,
         fetch_failures: 0,
+        fetch_successes: 0,
         simulate: nil
       }
       |> put_wifi_configured()
       |> put_connection_status(VintageNet.get(@connection_property))
       |> handle_new_status()
-
-    LedController.put_one_display_mode({:flashing, :green})
 
     {:ok, state}
   end
@@ -55,11 +65,15 @@ defmodule MetarMap.ConnectionWatcher do
   end
 
   def handle_cast({:put_fetch_ok, true}, state) do
-    {:noreply, %{state | fetch_failures: 0} |> handle_new_status()}
+    {:noreply,
+     %{state | fetch_failures: 0, fetch_successes: state.fetch_successes + 1}
+     |> handle_new_status()}
   end
 
   def handle_cast({:put_fetch_ok, false}, state) do
-    {:noreply, %{state | fetch_failures: state.fetch_failures + 1} |> handle_new_status()}
+    {:noreply,
+     %{state | fetch_failures: state.fetch_failures + 1, fetch_successes: 0}
+     |> handle_new_status()}
   end
 
   def handle_cast({:simulate, connection_status}, state) do
@@ -79,8 +93,9 @@ defmodule MetarMap.ConnectionWatcher do
       state.simulate -> state.simulate
       not state.wifi_configured? -> :no_wifi_config
       state.connection_status != :internet -> :no_internet_connection
-      state.fetch_failures < 2 -> :ok
-      :else -> :no_data
+      state.status == :new and state.fetch_successes == 0 and state.fetch_failures < 2 -> :new
+      state.fetch_failures >= 2 -> :no_data
+      :else -> :ok
     end
   end
 
@@ -110,22 +125,22 @@ defmodule MetarMap.ConnectionWatcher do
   defp handle_transition(state, :to, :no_wifi_config) do
     MetarMap.Application.stop_endpoint()
     VintageNetWizard.run_wizard(on_exit: {__MODULE__, :handle_on_wizard_exit, [self()]})
-    LedController.put_one_display_mode({:flashing, :purple})
+    LedController.put_one_display_mode(@display_modes.no_wifi_config)
     state
   end
 
   defp handle_transition(state, :to, :no_internet_connection) do
-    LedController.put_one_display_mode({:flashing, :red})
+    LedController.put_one_display_mode(@display_modes.no_internet_connection)
     state
   end
 
   defp handle_transition(state, :to, :no_data) do
-    LedController.put_one_display_mode({:flashing, :blue})
+    LedController.put_one_display_mode(@display_modes.no_data)
     state
   end
 
   defp handle_transition(state, :to, :ok) do
-    LedController.put_all_display_mode(:metar)
+    LedController.put_all_display_mode(@display_modes.ok)
     state
   end
 
