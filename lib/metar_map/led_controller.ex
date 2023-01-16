@@ -235,7 +235,7 @@ defmodule MetarMap.LedController do
     %State{state | timeline: timeline, latest_color: color, flicker?: next_flicker?}
   end
 
-  defp update_station_color(timeline, state, opts \\ []) do
+  defp update_station_color(timeline, state, opts) do
     next_color = station_color(state.station, state.prefs.mode)
 
     if next_color != timeline.latest_value do
