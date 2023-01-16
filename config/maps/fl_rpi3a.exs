@@ -10,6 +10,9 @@ led_pin = 18
 # LDR input pin
 ldr_pin = false
 
+# WiFi reset pin
+wifi_reset_pin = 21
+
 # Airports
 stations = [
   {"KZPH", 1},
@@ -69,7 +72,8 @@ stations = [
 
 config :metar_map,
   ldr_pin: ldr_pin,
-  stations: stations
+  stations: stations,
+  wifi_reset_pin: wifi_reset_pin
 
 config :blinkchain,
   canvas: {led_count, 1},

@@ -3,6 +3,7 @@ defmodule MetarMap.ConnectionWatcher do
 
   require Logger
 
+  alias Circuits.GPIO
   alias MetarMap.LedController
 
   @interface "wlan0"
@@ -10,7 +11,7 @@ defmodule MetarMap.ConnectionWatcher do
 
   @display_modes %{
     new: {:flashing, :green},
-    no_wifi_config: {:flashing, :purple},
+    wizarding: {:flashing, :purple},
     no_internet_connection: {:flashing, :red},
     no_data: {:flashing, :blue},
     ok: :metar
@@ -38,6 +39,7 @@ defmodule MetarMap.ConnectionWatcher do
       %{
         status: :new,
         wifi_configured?: false,
+        wifi_reset_gpio: open_wifi_reset_gpio(),
         connection_status: :disconnected,
         fetch_failures: 0,
         fetch_successes: 0,
@@ -48,6 +50,15 @@ defmodule MetarMap.ConnectionWatcher do
       |> handle_new_status()
 
     {:ok, state}
+  end
+
+  defp open_wifi_reset_gpio do
+    if wifi_reset_pin = Application.get_env(:metar_map, :wifi_reset_pin) do
+      {:ok, gpio} = GPIO.open(wifi_reset_pin, :input)
+      :ok = GPIO.set_pull_mode(gpio, :pullup)
+      :ok = GPIO.set_interrupts(gpio, :falling)
+      gpio
+    end
   end
 
   def handle_info({VintageNet, @connection_property, _old_value, new_value, _metadata}, state) do
@@ -62,6 +73,15 @@ defmodule MetarMap.ConnectionWatcher do
      state
      |> put_wifi_configured()
      |> handle_new_status()}
+  end
+
+  def handle_info({:circuits_gpio, _pin, _timestamp, 0}, state) do
+    # Rudimentary debounce: only transition on the first falling edge
+    if state.wifi_configured? do
+      {:noreply, %{state | wifi_configured?: false} |> handle_new_status()}
+    else
+      {:noreply, state}
+    end
   end
 
   def handle_cast({:put_fetch_ok, true}, state) do
@@ -91,7 +111,7 @@ defmodule MetarMap.ConnectionWatcher do
   defp overall_status(state) do
     cond do
       state.simulate -> state.simulate
-      not state.wifi_configured? -> :no_wifi_config
+      not state.wifi_configured? -> :wizarding
       state.connection_status != :internet -> :no_internet_connection
       state.status == :new and state.fetch_successes == 0 and state.fetch_failures < 2 -> :new
       state.fetch_failures >= 2 -> :no_data
@@ -116,16 +136,16 @@ defmodule MetarMap.ConnectionWatcher do
     end
   end
 
-  defp handle_transition(state, :from, :no_wifi_config) do
+  defp handle_transition(state, :from, :wizarding) do
     # The wizard has already exited, so we don't need to explicitly stop it here
     MetarMap.Application.start_endpoint()
     state
   end
 
-  defp handle_transition(state, :to, :no_wifi_config) do
+  defp handle_transition(state, :to, :wizarding) do
     MetarMap.Application.stop_endpoint()
     VintageNetWizard.run_wizard(on_exit: {__MODULE__, :handle_on_wizard_exit, [self()]})
-    LedController.put_one_display_mode(@display_modes.no_wifi_config)
+    LedController.put_one_display_mode(@display_modes.wizarding)
     state
   end
 
