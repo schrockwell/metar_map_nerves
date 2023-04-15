@@ -1,7 +1,7 @@
 import Config
 
 # The total number of WS281x LEDs in the string
-led_count = 50
+led_count = 100
 
 # The GPIO pin for WS281x LED data control.
 # To see available pins, read: https://github.com/jgarff/rpi_ws281x#gpio-usage
@@ -13,61 +13,77 @@ ldr_pin = false
 # WiFi reset pin
 wifi_reset_pin = 21
 
-# Airports
+# Airports (zero-indexed)
 stations = [
-  {"KZPH", 1},
-  {"KBKV", 2},
-  {"KCLW", 3},
-  {"KPIE", 4},
-  {"KTPA", 5},
-  {"KSPG", 6},
-  {"KMCF", 7},
-  {"KVDF", 8},
-  {"KPCM", 9},
-  {"KLAL", 10},
-  {"KBOW", 11},
-  {"KGIF", 12},
-  {"KISM", 13},
-  {"KMCO", 14},
-  {"KSFB", 15},
-  {"KLEE", 16},
-  {"KCGC", 17},
-  {"KTIX", 18},
-  {"KTTS", 19},
-  {"KXMR", 20},
-  {"KCOF", 21},
-  {"KMLB", 22},
-  {"KX26", 23},
-  {"KVRB", 24},
-  {"KFPR", 25},
-  {"KSUA", 26},
-  {"KPBI", 27},
-  {"KLNA", 28},
-  {"KBCT", 29},
-  {"KPMP", 30},
-  {"KFXE", 31},
-  {"KFLL", 32},
-  {"KHWO", 33},
-  {"KOPF", 34},
-  {"KMIA", 35},
-  {"KTMB", 36},
-  {"KHST", 37},
-  {"KK70", 38},
-  {"KMTH", 39},
-  {"KNQX", 40},
-  {"KMKY", 41},
-  {"KAPF", 42},
-  {"KRSW", 43},
-  {"KFMY", 44},
-  {"KIMM", 45},
-  {"K2IS", 46},
-  {"KPDG", 47},
-  {"K54A", 48},
-  {"KVNC", 49},
-  {"KSRQ", 50}
-  # {"KOBE", 51},
-  # {"KSEF", 52},
-  # {"KAGR", 53}
+  {"KHST", 2},
+  # Not reporting:
+  {"X51", 3},
+  {"KTMB", 4},
+  {"KMIA", 5},
+  {"KOPF", 6},
+  {"KHWO", 7},
+  {"KFLL", 8},
+  {"KFXE", 9},
+  {"KPMP", 10},
+  {"KBCT", 11},
+  {"KLNA", 12},
+  {"KPBI", 13},
+  # Skip 14
+  {"KSUA", 15},
+  {"KFPR", 16},
+  {"KVRB", 17},
+  {"KX26", 18},
+  {"KMLB", 19},
+  {"KCOF", 20},
+  {"KXMR", 21},
+  {"KTTS", 22},
+  {"KTIX", 23},
+  # Skip 24
+  {"KSFB", 25},
+  # Not reporting:
+  {"KORL", 26},
+  {"KMCO", 27},
+  {"KISM", 28},
+  # Skip 29
+  {"KLEE", 30},
+  # Skip 31
+  {"KINF", 32},
+  {"KBKV", 33},
+  {"KZPH", 34},
+  # Skip 35
+  {"KCLW", 36},
+  {"KPIE", 37},
+  {"KSPG", 38},
+  {"KMCF", 39},
+  {"KTPA", 40},
+  {"KVDF", 41},
+  {"KPCM", 42},
+  {"KLAL", 43},
+  {"KBOW", 44},
+  {"KX07", 45},
+  # Not reporting:
+  {"KAGR", 46},
+  {"KSEF", 47},
+  # Skip 48
+  {"KOBE", 49},
+  {"K2IS", 50},
+  # Skip 51-54
+  {"KSRQ", 55},
+  {"KVNC", 56},
+  # Skip 57
+  {"KPGD", 58},
+  {"KFMY", 59},
+  {"KRSW", 60},
+  {"KIMM", 61},
+  # Skip 62
+  {"KAPF", 63},
+  # Not reporting:
+  {"KMKY", 64},
+  # Skip 65-68
+  {"KEYW", 69},
+  {"KNQX", 70},
+  # Skip 71
+  {"KMTH", 72}
 ]
 
 config :metar_map,
