@@ -26,4 +26,27 @@ defmodule MetarMap.Metar do
       }
     end)
   end
+
+  def get_ceiling(%__MODULE__{sky_conditions: sky_conditions}) do
+    sky_conditions
+    |> Enum.sort_by(& &1.base_agl)
+    |> Enum.find(&(&1.cover in ["BKN", "OVC"]))
+    |> case do
+      nil -> nil
+      %{base_agl: base_agl} -> base_agl
+    end
+  end
+
+  def get_category(%__MODULE__{} = metar) do
+    ceiling = get_ceiling(metar)
+    visibility = metar.visibility
+
+    cond do
+      is_nil(visibility) -> :unknown
+      is_integer(ceiling) and (ceiling <= 500 or visibility <= 1) -> :lifr
+      is_integer(ceiling) and (ceiling <= 1000 or visibility <= 3) -> :ifr
+      is_integer(ceiling) and (ceiling <= 3000 or visibility <= 5) -> :mvfr
+      true -> :vfr
+    end
+  end
 end
