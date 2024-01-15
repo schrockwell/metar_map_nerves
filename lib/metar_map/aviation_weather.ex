@@ -12,12 +12,19 @@ defmodule MetarMap.AviationWeather do
     station_string = station_ids |> Enum.join(",")
     params = @base_params |> Map.put(:ids, station_string)
 
-    with {:ok, response} <- HTTPoison.get(@base_url, [], params: params) do
-      {:ok, parse_metars(response)}
+    case HTTPoison.get(@base_url, [], params: params) do
+      {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
+        {:ok, parse_metars(body)}
+
+      {:ok, %HTTPoison.Response{} = response} ->
+        {:error, response}
+
+      {:error, error} ->
+        {:error, error}
     end
   end
 
-  defp parse_metars(%HTTPoison.Response{body: body}) do
+  defp parse_metars(body) do
     body
     |> Jason.decode!()
     |> Enum.map(fn json ->
