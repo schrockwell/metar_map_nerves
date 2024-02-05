@@ -38,14 +38,14 @@ defmodule MetarMap.ConnectionWatcher do
     state =
       %{
         status: :new,
-        wifi_configured?: false,
+        wizard_running?: false,
+        # Need to hold onto this handle for... some reason? To prevent garbage collection?
         wifi_reset_gpio: open_wifi_reset_gpio(),
         connection_status: :disconnected,
         fetch_failures: 0,
         fetch_successes: 0,
         simulate: nil
       }
-      |> put_wifi_configured()
       |> put_connection_status(VintageNet.get(@connection_property))
       |> handle_new_status()
 
@@ -54,6 +54,7 @@ defmodule MetarMap.ConnectionWatcher do
 
   defp open_wifi_reset_gpio do
     if wifi_reset_pin = Application.get_env(:metar_map, :wifi_reset_pin) do
+      Logger.info("[ConnectionWatcher] Opening GPIO for WiFi reset (pin #{wifi_reset_pin})")
       {:ok, gpio} = GPIO.open(wifi_reset_pin, :input)
       :ok = GPIO.set_pull_mode(gpio, :pullup)
       :ok = GPIO.set_interrupts(gpio, :falling)
@@ -68,19 +69,23 @@ defmodule MetarMap.ConnectionWatcher do
      |> handle_new_status()}
   end
 
-  def handle_info(:wizard_exit, state) do
+  def handle_info(:wizard_exited, state) do
+    Logger.info("[ConnectionWatcher] Wizard exited")
+
     {:noreply,
      state
-     |> put_wifi_configured()
+     |> put_wizard_running(false)
      |> handle_new_status()}
   end
 
   def handle_info({:circuits_gpio, _pin, _timestamp, 0}, state) do
     # Rudimentary debounce: only transition on the first falling edge
-    if state.wifi_configured? do
-      {:noreply, %{state | wifi_configured?: false} |> handle_new_status()}
-    else
+    if state.wizard_running? do
+      Logger.info("[ConnectionWatcher] Wizard button pressed, but wizard already running")
       {:noreply, state}
+    else
+      Logger.info("[ConnectionWatcher] Wizard button pressed")
+      {:noreply, state |> put_wizard_running(true) |> handle_new_status()}
     end
   end
 
@@ -104,14 +109,14 @@ defmodule MetarMap.ConnectionWatcher do
     %{state | connection_status: connection_status}
   end
 
-  defp put_wifi_configured(state) do
-    %{state | wifi_configured?: VintageNetWizard.wifi_configured?(@interface)}
+  defp put_wizard_running(state, running) do
+    %{state | wizard_running?: running}
   end
 
   defp overall_status(state) do
     cond do
       state.simulate -> state.simulate
-      not state.wifi_configured? -> :wizarding
+      state.wizard_running? -> :wizarding
       state.connection_status != :internet -> :no_internet_connection
       state.status == :new and state.fetch_successes == 0 and state.fetch_failures < 2 -> :new
       state.fetch_failures >= 2 -> :no_data
@@ -137,16 +142,13 @@ defmodule MetarMap.ConnectionWatcher do
   end
 
   defp handle_transition(state, :from, :wizarding) do
-    # Stop the wizard, just in case
-    VintageNetWizard.stop_wizard()
-
     MetarMap.Application.start_endpoint()
     state
   end
 
   defp handle_transition(state, :to, :wizarding) do
     MetarMap.Application.stop_endpoint()
-    VintageNetWizard.run_wizard(on_exit: {__MODULE__, :handle_on_wizard_exit, [self()]})
+    VintageNetWizard.run_wizard(on_exit: {Kernel, :send, [self(), :wizard_exited]})
     LedController.put_one_display_mode(@display_modes.wizarding)
     state
   end
@@ -167,9 +169,4 @@ defmodule MetarMap.ConnectionWatcher do
   end
 
   defp handle_transition(state, _direction, _status), do: state
-
-  def handle_on_wizard_exit(pid) do
-    # Wait a bit for the wizard to exit so that the the wifi can be reconfigured
-    Process.send_after(pid, :wizard_exit, 5_000)
-  end
 end
