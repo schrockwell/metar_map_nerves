@@ -167,6 +167,7 @@ defmodule MetarMap.ConnectionWatcher do
   defp handle_transition(state, _direction, _status), do: state
 
   def handle_on_wizard_exit(pid) do
-    send(pid, :wizard_exit)
+    # Wait a bit for the wizard to exit so that the the wifi can be reconfigured
+    Process.send_after(pid, :wizard_exit, 5_000)
   end
 end
