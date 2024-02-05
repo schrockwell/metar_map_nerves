@@ -39,7 +39,7 @@ defmodule MetarMap.MixProject do
 
       # NERVES - Dependencies for all targets except :host
       {:nerves_runtime, "~> 0.11.3", targets: @all_targets},
-      {:nerves_pack, "~> 0.6.0", targets: @all_targets},
+      {:nerves_pack, "~> 0.7.0", targets: @all_targets},
 
       # MY APP
       {:phoenix, "~> 1.6.6"},
@@ -50,7 +50,7 @@ defmodule MetarMap.MixProject do
       {:sweet_xml, "~> 0.6.5"},
       {:blinkchain,
        git: "https://github.com/valiot/blinkchain.git",
-       ref: "c447e433586c359720c3f9a7b7b9cd2fa02489f2",
+       ref: "a10971cb6de1bd27b3828a38dbcd395b79eb1af3",
        submodules: true,
        targets: @all_targets},
       {:httpoison, "~> 1.5"},

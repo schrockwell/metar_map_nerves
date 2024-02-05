@@ -1,5 +1,5 @@
 export MIX_TARGET='rpi0'
-export VINGATE_NET_WIFI_SSID='zem'
+export VINTAGE_NET_WIFI_SSID='zem'
 export VINTAGE_NET_WIFI_PSK='flollop'
 export CROSSCOMPILE=1
 export MAP_CONFIG='ny_rpi0'

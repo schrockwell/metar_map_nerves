@@ -56,7 +56,7 @@ config :nerves_ssh,
 # Only hardcode wifi credentials if they exist in the ENV; otherwise, fall back on
 # VintageNetWizard
 wlan0_config =
-  with {:ok, ssid} <- System.fetch_env("VINGATE_NET_WIFI_SSID"),
+  with {:ok, ssid} <- System.fetch_env("VINTAGE_NET_WIFI_SSID"),
        {:ok, psk} <- System.fetch_env("VINTAGE_NET_WIFI_PSK") do
     %{
       type: VintageNetWiFi,

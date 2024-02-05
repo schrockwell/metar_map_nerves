@@ -24,8 +24,9 @@ It was designed to run on a [Raspberry Pi Zero W](https://www.raspberrypi.com/pr
 
    ```bash
    direnv allow
+   brew install fwup squashfs coreutils xz pkg-config
    asdf install
-   mix archive.install hex nerves_bootstrap
+   mix archive.install hex nerves_bootstrap 1.11.5
    mix deps.get
    ```
 
