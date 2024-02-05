@@ -137,7 +137,9 @@ defmodule MetarMap.ConnectionWatcher do
   end
 
   defp handle_transition(state, :from, :wizarding) do
-    # The wizard has already exited, so we don't need to explicitly stop it here
+    # Stop the wizard, just in case
+    VintageNetWizard.stop_wizard()
+
     MetarMap.Application.start_endpoint()
     state
   end
