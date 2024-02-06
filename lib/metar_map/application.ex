@@ -7,6 +7,8 @@ defmodule MetarMap.Application do
 
   require Logger
 
+  alias MetarMap.Tailscale
+
   @supervisor MetarMap.Supervisor
 
   @impl true
@@ -15,40 +17,45 @@ defmodule MetarMap.Application do
     # for other strategies and supported options
     opts = [strategy: :one_for_one, name: @supervisor]
 
-    children =
-      [
-        # Children for all targets
-        # Starts a worker by calling: MetarMap.Worker.start_link(arg)
-        # {MetarMap.Worker, arg},
-      ] ++ children(target())
-
-    Supervisor.start_link(children, opts)
-  end
-
-  def children(_target) do
-    # Children for all targets, including host
-
     prefs = MetarMap.Preferences.load()
     stations = MetarMap.Config.stations()
     ldr_pin = MetarMap.Config.ldr_pin()
 
-    # List all child processes to be supervised
-    List.flatten([
-      {Phoenix.PubSub, [name: MetarMap.PubSub, adapter: Phoenix.PubSub.PG2]},
-      {Registry, keys: :duplicate, name: MetarMap.LedController.Registry},
-      Enum.map(stations, &{MetarMap.LedController, station: &1, prefs: prefs}),
-      {MetarMap.StripController, prefs: prefs},
+    children =
+      List.flatten([
+        {Phoenix.PubSub, [name: MetarMap.PubSub, adapter: Phoenix.PubSub.PG2]},
+        {Registry, keys: :duplicate, name: MetarMap.LedController.Registry},
+        Enum.map(stations, &{MetarMap.LedController, station: &1, prefs: prefs}),
+        {MetarMap.StripController, prefs: prefs},
 
-      # This has to be before ConnectionWatcher
-      MetarMapWeb.Endpoint,
+        # This has to be before ConnectionWatcher
+        MetarMapWeb.Endpoint,
 
-      # This has to be after the Endpoint
-      MetarMap.ConnectionWatcher,
+        # This has to be after the Endpoint
+        MetarMap.ConnectionWatcher,
 
-      # This has to be after ConnectionWatcher
-      {MetarMap.MetarFetcher, stations: stations},
-      if(ldr_pin, do: [{MetarMap.LdrSensor, gpio_pin: ldr_pin}], else: [])
-    ])
+        # This has to be after ConnectionWatcher
+        {MetarMap.MetarFetcher, stations: stations},
+        if(ldr_pin, do: [{MetarMap.LdrSensor, gpio_pin: ldr_pin}], else: [])
+      ]) ++ surprise_children(target())
+
+    Supervisor.start_link(children, opts)
+  end
+
+  defp surprise_children(:rpi3a_tailscale) do
+    if Tailscale.enabled?() do
+      [
+        {Tailscale, :modprobe},
+        {Tailscale, :tailscaled},
+        {Tailscale, :tailscale}
+      ]
+    else
+      []
+    end
+  end
+
+  defp surprise_children(_other) do
+    []
   end
 
   def target do

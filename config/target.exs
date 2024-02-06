@@ -120,7 +120,8 @@ config :mdns_lite,
 config :metar_map,
   display_adapter: MetarMap.Display.TargetAdapter,
   gpio_adapter: MetarMap.Gpio.TargetAdapter,
-  dets_config_path: "/root/dets_config"
+  dets_config_path: "/root/dets_config",
+  tailscale_auth_key: System.get_env("TAILSCALE_AUTH_KEY")
 
 # Configures the Phoenix endpoint
 config :metar_map, MetarMapWeb.Endpoint,

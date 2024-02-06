@@ -3,7 +3,7 @@ defmodule MetarMap.MixProject do
 
   @app :metar_map
   @version "0.1.0"
-  @all_targets [:rpi0, :rpi3a]
+  @all_targets [:rpi3a, :rpi3a_tailscale]
 
   def project do
     [
@@ -32,7 +32,7 @@ defmodule MetarMap.MixProject do
   defp deps do
     [
       # NERVES - Dependencies for all targets
-      {:nerves, "~> 1.7.4", runtime: false},
+      {:nerves, "~> 1.8", runtime: false},
       {:shoehorn, "~> 0.7.0"},
       {:ring_logger, "~> 0.8.1"},
       {:toolshed, "~> 0.2.13"},
@@ -62,6 +62,7 @@ defmodule MetarMap.MixProject do
       {:tailwind, "~> 0.1", runtime: Mix.env() == :dev},
       {:phoenix_live_reload, "~> 1.2"},
       {:phoenix_pubsub, "~> 2.0"},
+      {:muontrap, "~> 1.0"},
 
       # Dependencies for specific targets
       # NOTE: It's generally low risk and recommended to follow minor version
@@ -69,11 +70,17 @@ defmodule MetarMap.MixProject do
       # version updates, please review their release notes in case
       # changes to your application are needed.
       # {:nerves_system_rpi, "1.20.0", runtime: false, targets: :rpi},
-      {:nerves_system_rpi0, "~> 1.20", runtime: false, targets: :rpi0},
+      # {:nerves_system_rpi0, "~> 1.20.2", runtime: false, targets: :rpi0},
       # {:nerves_system_rpi2, "1.20.0", runtime: false, targets: :rpi2},
       # {:nerves_system_rpi3, "1.20.0", runtime: false, targets: :rpi3},
-      {:nerves_system_rpi3a, "~> 1.20", runtime: false, targets: :rpi3a},
-      {:love_ex, "~> 0.2.0"},
+      # {:nerves_system_rpi3a, "~> 1.20", runtime: false, targets: :rpi3a},
+      {
+        :nerves_system_rpi3a_tailscale,
+        path: "../nerves_system_rpi3a_tailscale",
+        runtime: false,
+        targets: :rpi3a_tailscale,
+        nerves: [compile: true]
+      },
       # {:nerves_system_rpi4, "1.20.0", runtime: false, targets: :rpi4},
       # {:nerves_system_bbb, "~> 2.12", runtime: false, targets: :bbb},
       # {:nerves_system_osd32mp1, "~> 0.8", runtime: false, targets: :osd32mp1},
